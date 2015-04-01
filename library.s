@@ -385,7 +385,7 @@ read_push_btns
 	BX lr
 	
 ; -----------------------------------------------------------------------------------;
-; rand is a linear congruence generator which returnS a pseudo-random 32bit number   ;
+; rand is a linear congruence generator which returns a pseudo-random 32bit number   ;
 ; in register r0. 																     ;
 ;                                                                                    ;
 ; For more info, see: http://en.wikipedia.org/wiki/Linear_congruential_generator	 ;													 	 ;
@@ -434,6 +434,8 @@ rand
 	
 	LDR r0, =seed			; Store new seed back into memory. Used for
 	STR r4, [r0]			; calculating the next number in the sequence.
+	
+	MOV r0, r4
 							
 	LDMFD sp!, {r1-r5, lr}
 	

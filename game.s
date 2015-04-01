@@ -1,8 +1,20 @@
 	AREA lib, CODE, READWRITE
 
 	EXTERN BOARD_WIDTH
+	EXTERN BOARD_HEIGHT
+	EXTERN rand
+	EXTERN set_cursor_pos
 	EXPORT keystroke
 	EXPORT board
+	
+BRICK_WALL       EQU '#'
+BOMBERMAN        EQU 'B'
+SLOW_ENEMY       EQU 'x'
+FAST_ENEMY       EQU '*'
+BOMB             EQU 'o'
+BLAST_VERTICAL   EQU '|'
+BLAST_HORIZONTAL EQU '-'
+BARRIER          EQU 'Z'
 	
 bomb_placed		DCD 0x00000000
 bomb_detonated	DCD 0x00000000
@@ -61,8 +73,48 @@ generate_brick_walls
 	
 	MOV v3, #0				; Initialize counter.
 	
-place_brick_wall
+try_place_brick
+	BL rand                 ; Generate two random numbers for
+	MOV v1, a1              ; X and Y position (where brick wall
+	BL rand                 ; will be placed.
+	MOV v2, a1
+	
+	MOV a1, v1				; Check if the randomly generated X-Y
+	MOV a2, v2              ; pair is a free spot on the board.
+	BL check_pos
+	CMP a1, #1
+	BNE try_place_brick
+	
+place_brick
+	; Update game board position (v1, v2) with
+	; a brick wall.
+
 	LDMFD sp!, {v1-v3, lr}
+	BX lr
+	
+;-------------------------------------------------------;
+; NAME                                                  ;
+; update_pos			                                ;
+;                                                       ;
+; DESCRIPTION                                           ;
+; Update specified position on game board with provided ;
+; character. X is passed in a1. Y is passed in a2.      ;
+; The character to insert is passed in a3. No return.   ;
+;-------------------------------------------------------;
+update_pos
+	STMFD sp!, {a1-a3, v1-v3, lr}
+	
+	MOV v2, #0
+	LDR v1, =board
+	ADD v2, v2, #BOARD_WIDTH	; The offset is calculated as (board_width*Y)+X.
+	MUL v3, a2, v2
+	ADD v3, v3, a1	
+	
+	ADD v1, v1, v3              ; Add offset to base address of board string.
+	
+	STRB a3, [v1]
+	
+	LDMFD sp!, {a1-a3, v1-v3, lr}
 	BX lr
 	
 ;-------------------------------------------------------;
@@ -72,7 +124,7 @@ place_brick_wall
 ; DESCRIPTION                                           ;
 ; Checks whether specified position on game board is    ;
 ; free. X is passed in a1. Y is passed in a2. Returns 1 ; 
-; in a1 if spot if free, otherwise returns 0. Note that ;
+; in a1 if spot is free, otherwise returns 0. Note that ;
 ; the origin (0,0) is defined as the upper left most    ;
 ; 'Z'.                                                  ;
 ;-------------------------------------------------------;
@@ -87,7 +139,7 @@ check_pos
 	ADD v1, v1, v3				; Add offset to base address of board string.
 	
 	LDRB v1, [v1]				; Finally, load the character and check if it is 
-	CMP v1, #32					; a space character (ascii code 32). A space 
+	CMP v1, #32                 ; a space character (ascii code 32). A space 
 	BNE check_pos_assert_false  ; character indicates the position is free.
 	
 check_pos_assert_true
