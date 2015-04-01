@@ -36,6 +36,13 @@ lab7
 	LDMFD SP!, {lr, r0-r4}
 	BX lr
 	
+return_false
+	MOV a1, #'B'
+	BL output_character
+	
+	LDMFD SP!, {lr, r0-r4}
+	BX lr
+	
 ; ---------------------------------------------;
 ; Interrupt initialization code.               ;
 ; ---------------------------------------------;

@@ -385,12 +385,12 @@ read_push_btns
 	BX lr
 	
 ; -----------------------------------------------------------------------------------;
-; rand is a linear congruence generator which returnS a pseudo-random hex digit 0-F  ;
-; in register r0. 																 ;
+; rand is a linear congruence generator which returnS a pseudo-random 32bit number   ;
+; in register r0. 																     ;
 ;                                                                                    ;
 ; For more info, see: http://en.wikipedia.org/wiki/Linear_congruential_generator	 ;													 	 ;
 ;------------------------------------------------------------------------------------;																					 ;
-; DESCRIPTION                                                                       ;
+; DESCRIPTION                                                                        ;
 ; The next number returned X_{n+1} is determined by the formula X_{n+1}=(aX_n+c)mod  ; 
 ; m, where X_n is the current seed loaded from memory. The values of a, c, and m     ;
 ; have been carefully chosen to provide sufficient randomness for this lab. However, ;
@@ -434,18 +434,10 @@ rand
 	
 	LDR r0, =seed			; Store new seed back into memory. Used for
 	STR r4, [r0]			; calculating the next number in the sequence.
-	
-	LSR r4, r4, #12			; Shift right to get a single hex digit. As it turns out
-	MOV r0, r4				; the bits in higher positions have a higher degree of 
-							; randomness, so this is good. Specifically, the k'th bit
-							; follows a cycle length of 2^k. 
-							; Question: how can you calculate the sequence period after shifting 
-							; away 12 of the 16 bits without using brute force?
 							
 	LDMFD sp!, {r1-r5, lr}
 	
-	BX lr					; Branch back in a loop. Change this to branch back to caller when piecing 
-							; things together.
+	BX lr
 
 ;------------------------DIV AND MOD---------------------
 ;Dividend passed in r0
