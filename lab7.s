@@ -30,9 +30,6 @@ lab7
 	BL uart_init
 	BL interrupt_init
 	BL timer_init
-	
-	MOV a1, #'A'
-	BL output_character
 
 	BL draw
 	

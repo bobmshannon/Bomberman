@@ -509,8 +509,8 @@ DIVEND
 	
 ;-------------------SET CURSOR POS------------------	
 ;Sets the cursor location in the terminal
-;a2 is X location
-;a1 is Y location
+;a2 is Y location
+;a1 is X location
 set_cursor_pos
 	STMFD SP!, {a1-a4, lr}
 
