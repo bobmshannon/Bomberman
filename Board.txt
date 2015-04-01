@@ -1,0 +1,20 @@
+	   Bomberman
+Time:120       Score:0000
+ZZZZZZZZZZZZZZZZZZZZZZZZZ
+ZB                     xZ
+Z Z Z Z Z Z Z Z Z Z Z Z Z
+Z                       Z
+Z Z Z Z Z Z Z Z Z Z Z Z Z
+Z                       Z
+Z Z Z Z Z Z Z Z Z Z Z Z Z
+Z                       Z
+Z Z Z Z Z Z Z Z Z Z Z Z Z
+Z                       Z
+Z Z Z Z Z Z Z Z Z Z Z Z Z
+Zx                     +Z
+ZZZZZZZZZZZZZZZZZZZZZZZZZ 
+ 
+ 13x25
+ 
+ 
+ZZZZZZZZZZZZZZZZZZZZZZZZZ Z                       Z Z Z Z Z Z Z Z Z Z Z Z Z Z Z                       Z Z Z Z Z Z Z Z Z Z Z Z Z Z Z                       Z Z Z Z Z Z Z Z Z Z Z Z Z Z Z                       Z Z Z Z Z Z Z Z Z Z Z Z Z Z Z                       Z Z Z Z Z Z Z Z Z Z Z Z Z Z Z                       Z ZZZZZZZZZZZZZZZZZZZZZZZZZ
