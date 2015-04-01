@@ -1,6 +1,7 @@
 	AREA lib, CODE, READWRITE
 
 	EXPORT keystroke
+	EXPORT board
 	
 bomb_placed		DCD 0x00000000
 bomb_detonated	DCD 0x00000000

@@ -13,7 +13,7 @@
 	EXPORT  rand
 	EXPORT  seed
 	EXPORT  div_and_mod
-	EXPORT  set_output_xy
+	EXPORT  set_cursor_pos
 	EXPORT  print_integer
 
 
@@ -507,15 +507,15 @@ DIVEND
 	BX lr      ; Return to the caller
 	
 	
-;-------------------SET OUTPUT XY------------------	
+;-------------------SET CURSOR POS------------------	
 ;Sets the cursor location in the terminal
-;a1 is row location
-;a2 is column location
-set_output_xy
+;a2 is X location
+;a1 is Y location
+set_cursor_pos
 	STMFD SP!, {a1-a4, lr}
 
-	MOV a3, a1			;Save row and column locations
-	MOV a4, a2
+	MOV a3, a2			;Save x and y locations
+	MOV a4, a1
 	; ESC[r;cH    where r is row number and c is column number
 	;0x1B is char ESC
 	MOV a1, #0x1B
@@ -642,7 +642,7 @@ uart_init
 	LDR r0, =U0BASE  ; Uart 0 setup
 	MOV r1, #131
 	STRB r1, [r0, #U0DLA]	;Divisor latch access = 131
-	MOV r1, #10
+	MOV r1, #8
 	STRB r1, [r0, #U0DLL]	;Divisor latch lower = 10
 	MOV r1, #0
 	STRB r1, [r0, #U0DLU]	;Divisor latch upper = 0

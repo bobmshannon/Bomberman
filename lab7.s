@@ -3,13 +3,14 @@
 	EXPORT lab7
 	EXPORT FIQ_Handler
 
-	EXTERN  keystroke
-	EXTERN	uart_init
-	EXTERN  pin_connect_block_setup
-	EXTERN  output_string
-	EXTERN  output_character
-	EXTERN  print_integer
-	EXTERN  set_output_xy
+	EXTERN draw
+	EXTERN keystroke
+	EXTERN uart_init
+	EXTERN pin_connect_block_setup
+	EXTERN output_string
+	EXTERN output_character
+	EXTERN print_integer
+	EXTERN set_output_xy
 
 U0BASE  EQU 0xE000C000	; UART0 Base Address	
 U0IER   EQU 0xE000C004	; UART0 Interrupt Enable Register
@@ -29,6 +30,14 @@ lab7
 	BL uart_init
 	BL interrupt_init
 	BL timer_init
+	
+	MOV a1, #'A'
+	BL output_character
+
+	BL draw
+	
+	LDMFD SP!, {lr, r0-r4}
+	BX lr
 	
 ; ---------------------------------------------;
 ; Interrupt initialization code.               ;
@@ -112,9 +121,6 @@ UART0INT
 ; ---------------------------------------------;
 ; Interrupt handler exit.                      ;
 ; ---------------------------------------------;		
-move_dir_valid		
-		STR r2, [r0]	
-
 FIQ_Exit
 		LDMFD SP!, {r0-r12, lr}
 		SUBS pc, lr, #4
