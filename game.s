@@ -3,9 +3,11 @@
 	EXTERN BOARD_WIDTH
 	EXTERN BOARD_HEIGHT
 	EXTERN rand
+	EXTERN div_and_mod
 	EXTERN set_cursor_pos
 	EXPORT keystroke
 	EXPORT board
+	EXPORT initialize_game
 	
 BRICK_WALL       EQU '#'
 BOMBERMAN        EQU 'B'
@@ -42,7 +44,7 @@ num_enemies		DCD 0x00000000
 
 num_lives		DCD 0x00000000
 
-level			DCD 0x00000000
+level			DCD 0x00000001
 
 time			DCD 0x00000000
 
@@ -58,18 +60,33 @@ board = "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z Z
 	
 ;-------------------------------------------------------;
 ; NAME                                                  ;
+; initialize_game                                       ;
+;                                                       ;
+; DESCRIPTION                                           ;
+; Initialize the game. Add enemies and generate brick   ;
+; walls.                                                ;
+;-------------------------------------------------------;
+initialize_game
+	STMFD sp!, {lr}
+	BL generate_brick_walls
+	LDMFD sp!, {lr}
+	BX lr
+
+;-------------------------------------------------------;
+; NAME                                                  ;
 ; generate_brick_walls                                  ;
 ;                                                       ;
 ; DESCRIPTION                                           ;
 ; Randomly place brick walls throughout the game board. ;
 ;-------------------------------------------------------;	
 generate_brick_walls
-	STMFD sp!, {v1-v3, lr}
+	STMFD sp!, {v1-v4, lr}
 	LDR v1, =level			; Load current level into v1.
 	LDR v1, [v1]
 	
-	MOV v3, #10
-	MUL v2, v1, v3			; v2 = number of bricks = level * 10.
+	MOV v3, #10				; Number of bricks to generate. Might need
+	MUL v4, v1, v3			; to be tweaked. 
+							; v2 = number of bricks = level * 10.
 	
 	MOV v3, #0				; Initialize counter.
 	
@@ -79,6 +96,18 @@ try_place_brick
 	BL rand                 ; will be placed.
 	MOV v2, a1
 	
+	MOV a1, v1				    ; Restrict the range of the random number
+	MOV a2, #0                  ; such that X e [0, BOARD_WIDTH]
+	ADD a2, a2, #BOARD_WIDTH    
+	BL div_and_mod
+	MOV v1, a2
+	
+	MOV a1, v2                  ; Restrict the range of the random number 
+	MOV a2, #0                  ; such that Y e [0, BOARD_HEIGHT]
+	ADD a2, a2, #BOARD_HEIGHT   
+	BL div_and_mod
+	MOV v2, a2
+	
 	MOV a1, v1				; Check if the randomly generated X-Y
 	MOV a2, v2              ; pair is a free spot on the board.
 	BL check_pos
@@ -86,10 +115,18 @@ try_place_brick
 	BNE try_place_brick
 	
 place_brick
+	MOV a1, v1
+	MOV a2, v2
+	MOV a3, #BRICK_WALL
+	BL update_pos
 	; Update game board position (v1, v2) with
 	; a brick wall.
+	
+	ADD v3, v3, #1             ; Increment counter.
+	CMP v3, v4
+	BNE try_place_brick
 
-	LDMFD sp!, {v1-v3, lr}
+	LDMFD sp!, {v1-v4, lr}
 	BX lr
 	
 ;-------------------------------------------------------;

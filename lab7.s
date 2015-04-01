@@ -4,6 +4,7 @@
 	EXPORT FIQ_Handler
 
 	EXTERN draw
+	EXTERN initialize_game
 	EXTERN keystroke
 	EXTERN uart_init
 	EXTERN pin_connect_block_setup
@@ -30,6 +31,8 @@ lab7
 	BL uart_init
 	BL interrupt_init
 	BL timer_init
+	
+	BL initialize_game
 
 	BL draw
 	
