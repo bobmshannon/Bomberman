@@ -3,6 +3,7 @@
 	EXPORT lab7
 	EXPORT FIQ_Handler
 
+	EXTERN  keystroke
 	EXTERN	uart_init
 	EXTERN  pin_connect_block_setup
 	EXTERN  output_string
@@ -93,30 +94,18 @@ FIQ_Handler
 ; ---------------------------------------------;		
 ; Timer interrupt handler.                     ;
 ; ---------------------------------------------;
-		LDR r0, =timer_fired		;Set timer_fired to 1
-		MOV r1, #1
-		STR r1, [r0]
-		LDR r0, =T0IR				;Reset Match Register 0 interrupt flag
-	    MOV r1, #1	
-		STR r1, [r0]
+
 		B FIQ_Exit
 
 ; ---------------------------------------------;
 ; UART interrupt handler.                      ;
 ; ---------------------------------------------;
 UART0INT
-		LDR r0, =move_direction
+		LDR r0, =keystroke
 		LDR r1, =U0BASE
 		LDR r2, [r1]
 		
-		CMP r2, #'i'
-		BEQ move_dir_valid
-		CMP r2, #'j'
-		BEQ move_dir_valid
-		CMP r2, #'k'
-		BEQ move_dir_valid
-		CMP r2, #'m'
-		BEQ move_dir_valid
+		STR r2, [r0]			; Store user keystroke.
 		
 		B FIQ_Exit
 

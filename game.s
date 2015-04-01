@@ -1,5 +1,7 @@
 	AREA lib, CODE, READWRITE
 
+	EXPORT keystroke
+	
 bomb_placed		DCD 0x00000000
 bomb_detonated	DCD 0x00000000
 bomb_timer		DCD 0x00000000
@@ -33,6 +35,8 @@ time			DCD 0x00000000
 score			DCD 0x00000000
 
 game_over		DCD 0x00000000
+
+keystroke		DCD 0x00000000
 
 board = "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZZZZZZZZZZZZZZZZZZZZZZZZZ"
 
