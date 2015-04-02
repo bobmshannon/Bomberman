@@ -97,13 +97,13 @@ try_place_brick
 	MOV v2, a1
 	
 	MOV a1, v1				    ; Restrict the range of the random number
-	MOV a2, #0                  ; such that X e [0, BOARD_WIDTH]
+	MOV a2, #0                  ; such that X is an element of [0, BOARD_WIDTH]
 	ADD a2, a2, #BOARD_WIDTH    
 	BL div_and_mod
 	MOV v1, a2
 	
 	MOV a1, v2                  ; Restrict the range of the random number 
-	MOV a2, #0                  ; such that Y e [0, BOARD_HEIGHT]
+	MOV a2, #0                  ; such that Y is an element of [0, BOARD_HEIGHT]
 	ADD a2, a2, #BOARD_HEIGHT   
 	BL div_and_mod
 	MOV v2, a2
@@ -118,10 +118,8 @@ place_brick
 	MOV a1, v1
 	MOV a2, v2
 	MOV a3, #BRICK_WALL
-	BL update_pos
-	; Update game board position (v1, v2) with
-	; a brick wall.
-	
+	BL update_pos              ; Update free position with brick wall.
+
 	ADD v3, v3, #1             ; Increment counter.
 	CMP v3, v4
 	BNE try_place_brick
