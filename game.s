@@ -84,7 +84,7 @@ generate_brick_walls
 	LDR v1, =level			; Load current level into v1.
 	LDR v1, [v1]
 	
-	MOV v3, #10				; Number of bricks to generate. Might need
+	MOV v3, #20				; Number of bricks to generate. Might need
 	MUL v4, v1, v3			; to be tweaked. 
 							; v2 = number of bricks = level * 10.
 	

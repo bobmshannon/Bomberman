@@ -38,7 +38,7 @@ IO1SET EQU 0xE0028014    ; GPIO port 1 output set register.
 IO1DIR EQU 0xE0028018    ; GPIO port 1 direction control register.
 IO1CLR EQU 0xE002801C    ; GPIO port 1 output clear register.
 
-seed 		DCD  0x00400005	; Seed value X_n. Updated with the next number in the pseudo 
+seed 		DCD  0xFC3BECED	; Seed value X_n. Updated with the next number in the pseudo 
 							; random sequence each time the rand routine is called.
 	
 digits_SET	
@@ -408,7 +408,7 @@ rand
 	; ---------------------------------------------;
 	LDR r0, =seed
 	LDR r0, [r0]
-	
+
 	; ---------------------------------------------;
 	; Initialize offset, multiplier, and mod value ;
 	; The offset goes in r1, multiplier in r2, and ;
