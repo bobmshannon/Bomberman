@@ -166,7 +166,7 @@ place_bomb_exit
 ; Move bomerman based on player keystroke.              ;
 ;-------------------------------------------------------;
 move_bomberman
-	STMFD sp!, {lr}
+	STMFD sp!, {lr, v1-v6}
 	
 	LDR v5, =keystroke
 	LDR v5, [v5]
@@ -178,7 +178,7 @@ move_bomberman
 	LDR a2, [a2]
 	
 	CMP v5, #0
-	BEQ return                     ; Check for no input.
+	BEQ not_valid_move             ; Check for no input.
 	
 	MOV v1, a1                     ; Temporarily store original X-Y position
 	MOV v2, a2                     ; before modifying it based on user keystroke.
@@ -239,11 +239,11 @@ valid_move
 	BLNE update_pos               ; and old position are the same. Do not remove bomberman
 	                              ; from old position in this case.
 	
-	LDMFD sp!, {lr}
+	LDMFD sp!, {lr, v1-v6}
 	BX lr
 	
 not_valid_move
-	LDMFD sp!, {lr}
+	LDMFD sp!, {lr, v1-v6}
 	BX lr
 
 ;-------------------------------------------------------;
