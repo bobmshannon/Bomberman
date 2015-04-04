@@ -5,6 +5,7 @@
 
 	EXTERN draw
 	EXTERN initialize_game
+	EXTERN update_game
 	EXTERN keystroke
 	EXTERN uart_init
 	EXTERN pin_connect_block_setup
@@ -22,6 +23,8 @@ T0TC	EQU 0xE0004008	; Timer 0 Timer Count
 T0MCR	EQU 0xE0004014	; Timer 0 Match Control Register
 T0MR0	EQU 0xE0004018	; Timer 0 Match Register 0
 T0MR	EQU 0xE0004018	; Timer 0 Match Register 0
+	
+refresh_timer_fired DCD 0x00000000
 		
 lab7	 	
 	STMFD sp!, {lr, r0-r4}
@@ -33,10 +36,15 @@ lab7
 	BL timer_init
 	
 	BL initialize_game
-
-	BL draw
 	
-	LDMFD SP!, {lr, r0-r4}
+game_loop	
+	BL update_game
+	BL draw
+
+	B game_loop
+	
+exit
+	LDMFD sp!, {lr, r0-r4}
 	BX lr
 	
 ; ---------------------------------------------;
@@ -82,7 +90,7 @@ timer_init
 	STR r1, [r0]
 	
 	LDR r0, =T0MR0
-	LDR r1, =0x46514E		;Set MR0 to .25 second intervals
+	LDR r1, =0x2328A7		;Set MR0 to .125 second intervals
 	STR r1, [r0]
 	
 	LDMFD SP!, {r0-r3, lr}
@@ -103,7 +111,14 @@ FIQ_Handler
 ; ---------------------------------------------;		
 ; Timer interrupt handler.                     ;
 ; ---------------------------------------------;
-
+		LDR a1, =refresh_timer_fired
+		MOV a2, #1
+		STR a2, [a1]
+		
+		LDR a1, =T0IR				; Reset Match Register 0 interrupt flag
+	    MOV a2, #1	
+		STR a2, [a1]
+		
 		B FIQ_Exit
 
 ; ---------------------------------------------;
