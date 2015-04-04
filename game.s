@@ -26,20 +26,18 @@ DOWN_KEY         EQU 's'
 RIGHT_KEY        EQU 'd'
 PLACE_BOMB_KEY   EQU 'x'
 	
-BOMBERMAN_X_START EQU 1
-BOMBERMAN_Y_START EQU 1
+BOMBERMAN_X_START EQU 1              ; Bomberman starting x-position.
+BOMBERMAN_Y_START EQU 1              ; Bomberman starting y-position.
 	
-bomb_placed		DCD 0x00000000
-bomb_detonated	DCD 0x00000000
-bomb_timer		DCD 0x00000000
-bomb_radius		DCD 0x00000001
-bomb_x_pos		DCD 0x00000000
-bomb_y_pos		DCD 0x00000000
+bomb_placed		DCD 0x00000000       ; Has a bomb been placed?
+bomb_detonated	DCD 0x00000000       ; Has the placed bomb been detonated?
+bomb_timer		DCD 0x00000000       ; Bomb detonation timer.
+bomb_radius		DCD 0x00000001       ; Bomb blast radius.
+bomb_x_pos		DCD 0x00000000       ; Placed bomb x-position.
+bomb_y_pos		DCD 0x00000000       ; Placed bomb y-position.
 
-bomberman_x_pos	DCD 0x00000001
-bomberman_y_pos DCD 0x00000001
-bomberman_x_start DCD 0x00000001
-bomberman_y_start DCD 0x00000001
+bomberman_x_pos	DCD 0x00000001       ; Bomberman's current x-position.
+bomberman_y_pos DCD 0x00000001       ; Bomberman's current y-position.
 
 enemy1_x_pos	DCD 0x00000000
 enemy1_y_pos	DCD 0x00000000
