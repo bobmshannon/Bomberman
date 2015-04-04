@@ -63,10 +63,10 @@ draw_board_loop
 	BX lr
 	
 ;-------------------------------------------------------;
-; NAME                                                  ;
+; @NAME                                                 ;
 ; draw_changes                                          ;
 ;                                                       ;
-; DESCRIPTION                                           ;
+; @DESCRIPTION                                          ;
 ; Draw current game state to screen, only printing      ;
 ; characters that have changed since last refresh. This ;
 ; is a faster alternative to draw.                      ;

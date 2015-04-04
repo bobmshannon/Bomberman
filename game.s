@@ -24,6 +24,8 @@ UP_KEY           EQU 'w'
 LEFT_KEY         EQU 'a'
 DOWN_KEY         EQU 's'
 RIGHT_KEY        EQU 'd'
+PLACE_BOMB_KEY   EQU 'x'
+	
 BOMBERMAN_X_START EQU 1
 BOMBERMAN_Y_START EQU 1
 	
@@ -101,7 +103,58 @@ update_game
     STMFD sp!, {lr}
 	LDR  a1, =keystroke
 	LDR a1, [a1]
-	BL move_bomberman
+	BL move_bomberman            ; Move bomberman.
+	
+	LDR a1, =keystroke
+	LDR a1, [a1]
+	CMP a1, #PLACE_BOMB_KEY
+	BLEQ place_bomb
+	
+	LDR v1, =keystroke
+	MOV a1, #0                   ; Reset keystroke.
+	STR a1, [v1]
+	
+	LDMFD sp!, {lr}
+	BX lr
+	
+;-------------------------------------------------------;
+; @NAME                                                 ;
+; place_bomb                                            ;
+;                                                       ;
+; @DESCRIPTION                                          ;
+; Place bomb at bomberman's current position.           ;
+;-------------------------------------------------------;
+place_bomb
+	STMFD sp!, {lr}
+	
+	LDR a1, =bomberman_x_pos
+	LDR a1, [a1]
+	MOV v1, a1
+	
+	LDR a2, =bomberman_y_pos
+	LDR a2, [a2]
+	MOV v2, a2
+	
+	LDR a1, =bomb_placed
+	LDR a1, [a1]
+	CMP a1, #1
+	BLEQ place_bomb_exit       ; A bomb is already placed, it must be detonated first before allowing
+	                           ; another placement.
+	LDR a1, =bomb_placed
+	MOV a2, #1
+	STR a2, [a1]               ; Assert bomb_placed flag.
+	
+	MOV a1, v1
+	MOV a2, v2
+	MOV a3, #BOMB
+	BL update_pos              ; Place the bomb.
+	
+	LDR a1, =bomb_x_pos        ; Set X-Y coordinates of placed bomb.
+	STR v1, [a1]
+	LDR a1, =bomb_y_pos
+	STR v2, [a1]
+	
+place_bomb_exit
 	LDMFD sp!, {lr}
 	BX lr
 	
@@ -127,8 +180,8 @@ move_bomberman
 	CMP v5, #0
 	BEQ return                     ; Check for no input.
 	
-	MOV v1, a1
-	MOV v2, a2
+	MOV v1, a1                     ; Temporarily store original X-Y position
+	MOV v2, a2                     ; before modifying it based on user keystroke.
 	MOV v3, a1
 	MOV v4, a2
 	
@@ -166,19 +219,30 @@ valid_move
 	MOV a3, #BOMBERMAN             ; Move bomerman to new position.
 	BL update_pos
 	
-	MOV a1, v1
-	MOV a2, v2
-	MOV a3, #FREE                  ; Remove bomberman from old position.
-	BL update_pos
+	MOV a1, v1                     ; Remove bomberman from old position only if a bomb has not 
+	MOV a2, v2                     ; been placed at old position.
+	MOV a3, #FREE
+	MOV v5, #100                   ; Initialize to two non equal values. Needed to compare two
+	MOV v6, #101                   ; X-Y coordinate pairs properly.
+	
+	LDR v3, =bomb_x_pos
+	LDR v3, [v3]
+	CMP v3, v1                    ; Compare old x-position to bomb's x-position.
+	MOVEQ v5, #1
+	
+	LDR v4, =bomb_y_pos
+	LDR v4, [v4]
+	CMP v4, v2                    ; Compare old y-position to bomb's y-position.
+	MOVEQ v6, #1
+	
+	CMP v5, v6                    ; If v5 and v6 are asserted, then the bomb position                    
+	BLNE update_pos               ; and old position are the same. Do not remove bomberman
+	                              ; from old position in this case.
 	
 	LDMFD sp!, {lr}
 	BX lr
 	
-	
 not_valid_move
-	LDR v1, =keystroke
-	MOV a1, #0
-	STR a1, [v1]
 	LDMFD sp!, {lr}
 	BX lr
 
