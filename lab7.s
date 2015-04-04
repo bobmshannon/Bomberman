@@ -4,6 +4,7 @@
 	EXPORT FIQ_Handler
 
 	EXTERN draw
+	EXTERN draw_changes
 	EXTERN initialize_game
 	EXTERN update_game
 	EXTERN keystroke
