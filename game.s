@@ -38,6 +38,10 @@ ENEMY2_Y_START	EQU 11               ; Enemy 2 starting y-position.
 ENEMY3_X_START	EQU 23				 ; Enemy 3 (FAST) starting x-position.
 ENEMY3_Y_START	EQU 11               ; Enemy 3 (FAST) starting y-position.
 	
+BOMB_TIMEOUT    EQU 5                ; After many refreshes the bomb should detonate.
+BLAST_X_RADIUS  EQU 4                ; Horizontal blast radius.
+BLAST_Y_RADIUS  EQU 2                ; Vertical blast radius.
+	
 bomb_placed		DCD 0x00000000       ; Has a bomb been placed?
 bomb_detonated	DCD 0x00000000       ; Has the placed bomb been detonated?
 bomb_timer		DCD 0x00000000       ; Bomb detonation timer.
@@ -156,6 +160,13 @@ initialize_game
 ;-------------------------------------------------------;
 update_game
     STMFD sp!, {lr}
+	
+	LDR a1, =bomb_detonated
+	LDR a3, [a1]
+	MOV a2, #0
+	CMP a3, #1
+	BLEQ clear_bomb_detonation   ; Remove remnants from bomb blast.
+	
 	LDR  a1, =keystroke
 	LDR a1, [a1]
 	BL move_bomberman            ; Move bomberman.
@@ -163,11 +174,287 @@ update_game
 	LDR a1, =keystroke
 	LDR a1, [a1]
 	CMP a1, #PLACE_BOMB_KEY
-	BLEQ place_bomb
+	BLEQ place_bomb              ; Place bomb if keystroke is 'x'
+	                             ; and a bomb is not already placed.
+	
+	LDR a1, =bomb_timer
+	LDR a1, [a1]
+	CMP a1, #BOMB_TIMEOUT        ; Has the bomb timer timed out and is a bomb
+    MOVEQ a1, #1                 ; placed? If so, detonate the bomb.
+	LDR a2, =bomb_placed
+	LDR a2, [a2]
+	CMP a2, #0
+	MOVEQ a2, #-1
+	CMP a1, a2
+	BLEQ detonate_bomb
+	
+	LDR a1, =bomb_timer
+	LDR a2, [a1]
+	ADD a2, a2, #1               
+	STR a2, [a1]                 ; Increment bomb timer.
+	
 	
 	LDR v1, =keystroke
 	MOV a1, #0                   ; Reset keystroke.
 	STR a1, [v1]
+	
+	LDMFD sp!, {lr}
+	BX lr
+	
+;-------------------------------------------------------;
+; @NAME                                                 ;
+; detonate_bomb                                         ;
+;                                                       ;
+; @DESCRIPTION                                          ;
+; Detonate the placed bomb.                             ;
+;-------------------------------------------------------;
+detonate_bomb
+	STMFD sp!, {lr}
+	
+	LDR a1, =bomb_detonated
+	MOV a2, #1
+	STR a2, [a1]                 ; Assert bomb detonated flag.
+	
+	LDR a1, =bomb_placed
+	MOV a2, #0
+	STR a2, [a1]                 ; De-assert bomb placed flag.
+
+	LDR a1, =bomb_x_pos
+	LDR a1, [a1]
+	MOV v1, a1
+	LDR a2, =bomb_y_pos
+	LDR a2, [a2]
+	MOV v2, a2
+	
+	SUB v3, v1, #BLAST_X_RADIUS  ; Lower bound x-position for blast.
+	ADD v4, v1, #BLAST_X_RADIUS  ; Upper bound x-position for blast.
+	
+	SUB v5, v2, #BLAST_Y_RADIUS  ; Lower bound y-position for blast.
+	ADD v6, v2, #BLAST_Y_RADIUS  ; Upper bound y-position for blast.
+
+;-------------------------------------------------------;
+; Destroy everything to the left of the placed bomb.    ;
+; i.e. ----o                                            ;
+;-------------------------------------------------------;
+detonate_bomb_west
+	MOV v7, v1                   ; Initialize X-detonation loop counter.
+	
+detonate_bomb_west_loop
+	; Add '-' and '|' characters, making sure
+	; to not blow up any indestructible stuff. Also need to
+	; check if the blast kills an enemy or bomberman.
+
+	MOV a1, v7                   ; Current X-position (decremented after each loop iteration).
+	MOV a2, v2                   ; Y-position (fixed).
+	BL check_pos_char
+	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call game_over.
+	; Call game_over
+	
+	MOV a1, v7                   ; Current X-position (decremented after each loop iteration).
+	MOV a2, v2                   ; Y-position (fixed).
+	BL check_pos_char
+	CMP a1, #BARRIER             ; Is it a barrier? If so, break out of loop.
+	BEQ detonate_bomb_east
+	
+	MOV a1, v7                   ; Current X-position (decremented after each loop iteration).
+	MOV a2, v2                   ; Y-position (fixed).
+	BL check_pos_char
+	CMP a1, #ENEMY_SLOW          ; Is it a slow enemy? If so, call kill_enemy.
+	; Call kill_enemy
+	
+	MOV a1, v7                   ; Current X-position (decremented after each loop iteration).
+	MOV a2, v2                   ; Y-position (fixed).
+	BL check_pos_char
+	CMP a1, #ENEMY_FAST          ; Is it a fast enemy? If so, call kill_enemy.
+	; Call kill_enemy
+	
+	MOV a1, v7                   ; Current X-position (decremented after each loop iteration).
+	MOV a2, v2                   ; Y-position (fixed).
+	BL check_pos_char
+	CMP a1, #BOMB                ; Is it a bomb? If so, do nothing.
+	BEQ detonate_bomb_west_next
+	
+	MOV a1, v7
+	MOV a2, v2
+	MOV a3, #BLAST_HORIZONTAL
+	BL update_pos                ; Otherwise, draw a '-'. (this is the default case of our "switch statement").
+	
+detonate_bomb_west_next
+	SUB v7, v7, #1               ; Decrement X-position.
+	CMP v7, v3
+	BGE detonate_bomb_west_loop
+	
+;-------------------------------------------------------;
+; Destroy everything to the right of the placed bomb.   ;
+; i.e. o----                                            ;
+;-------------------------------------------------------;
+detonate_bomb_east
+	MOV v7, v1                   ; Initialize X-detonation loop counter.
+	
+detonate_bomb_east_loop
+	; Add '-' and '|' characters, making sure
+	; to not blow up any indestructible stuff. Also need to
+	; check if the blast kills an enemy or bomberman.
+
+	MOV a1, v7                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v2                   ; Y-position (fixed).
+	BL check_pos_char
+	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call game_over.
+	; Call game_over
+	
+	MOV a1, v7                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v2                   ; Y-position (fixed).
+	BL check_pos_char
+	CMP a1, #BARRIER             ; Is it a barrier? If so, break out of loop.
+	BEQ detonate_bomb_north
+	
+	MOV a1, v7                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v2                   ; Y-position (fixed).
+	BL check_pos_char
+	CMP a1, #ENEMY_SLOW          ; Is it a slow enemy? If so, call kill_enemy.
+	; Call kill_enemy
+	
+	MOV a1, v7                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v2                   ; Y-position (fixed).
+	BL check_pos_char
+	CMP a1, #ENEMY_FAST          ; Is it a fast enemy? If so, call kill_enemy.
+	; Call kill_enemy
+	
+	MOV a1, v7                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v2                   ; Y-position (fixed).
+	BL check_pos_char
+	CMP a1, #BOMB                ; Is it a bomb? If so, do nothing.
+	BEQ detonate_bomb_east_next
+	
+	MOV a1, v7
+	MOV a2, v2
+	MOV a3, #BLAST_HORIZONTAL
+	BL update_pos                ; Otherwise, draw a '-'. (this is the default case of our "switch statement").
+	
+detonate_bomb_east_next
+	ADD v7, v7, #1               ; Increment X-position.
+	CMP v7, v4
+	BLE detonate_bomb_east_loop
+	
+;-------------------------------------------------------;
+; Destroy everything below the placed bomb.             ;
+;-------------------------------------------------------;
+detonate_bomb_south
+	MOV v7, v2                   ; Initialize Y-detonation loop counter.
+	
+detonate_bomb_south_loop
+	; Add '-' and '|' characters, making sure
+	; to not blow up any indestructible stuff. Also need to
+	; check if the blast kills an enemy or bomberman.
+
+	MOV a1, v1                   ; X-position (fixed).
+	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
+	BL check_pos_char
+	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call game_over.
+	; Call game_over
+	
+	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
+	BL check_pos_char
+	CMP a1, #BARRIER             ; Is it a barrier? If so, break out of loop.
+	BEQ detonate_bomb_north
+	
+	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
+	BL check_pos_char
+	CMP a1, #ENEMY_SLOW          ; Is it a slow enemy? If so, call kill_enemy.
+	; Call kill_enemy
+	
+	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
+	BL check_pos_char
+	CMP a1, #ENEMY_FAST          ; Is it a fast enemy? If so, call kill_enemy.
+	; Call kill_enemy
+	
+	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
+	BL check_pos_char
+	CMP a1, #BOMB                ; Is it a bomb? If so, do nothing.
+	BEQ detonate_bomb_south_next
+	
+	MOV a1, v1
+	MOV a2, v7
+	MOV a3, #BLAST_VERTICAL
+	BL update_pos                ; Otherwise, draw a '-'. (this is the default case of our "switch statement").
+	
+detonate_bomb_south_next
+	ADD v7, v7, #1               ; Increment Y-position.
+	CMP v7, v6
+	BLE detonate_bomb_south_loop
+	
+;-------------------------------------------------------;
+; Destroy everything above the placed bomb.             ;
+;-------------------------------------------------------;
+detonate_bomb_north
+	MOV v7, v2                   ; Initialize Y-detonation loop counter.
+	
+detonate_bomb_north_loop
+	; Add '-' and '|' characters, making sure
+	; to not blow up any indestructible stuff. Also need to
+	; check if the blast kills an enemy or bomberman.
+
+	MOV a1, v1                   ; X-position (fixed).
+	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
+	BL check_pos_char
+	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call game_over.
+	; Call game_over
+	
+	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
+	BL check_pos_char
+	CMP a1, #BARRIER             ; Is it a barrier? If so, break out of loop.
+	BEQ detonate_bomb_exit
+	
+	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
+	BL check_pos_char
+	CMP a1, #ENEMY_SLOW          ; Is it a slow enemy? If so, call kill_enemy.
+	; Call kill_enemy
+	
+	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
+	BL check_pos_char
+	CMP a1, #ENEMY_FAST          ; Is it a fast enemy? If so, call kill_enemy.
+	; Call kill_enemy
+	
+	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
+	BL check_pos_char
+	CMP a1, #BOMB                ; Is it a bomb? If so, do nothing.
+	BEQ detonate_bomb_north_next
+	
+	MOV a1, v1
+	MOV a2, v7
+	MOV a3, #BLAST_VERTICAL
+	BL update_pos                ; Otherwise, draw a '-'. (this is the default case of our "switch statement").
+	
+detonate_bomb_north_next
+	SUB v7, v7, #1               ; Decrement Y-position.
+	CMP v7, v5
+	BGE detonate_bomb_north_loop
+
+detonate_bomb_exit
+	LDMFD sp!, {lr}
+	BX lr
+
+;-------------------------------------------------------;
+; @NAME                                                 ;
+; clear_bomb_detonation                                 ;
+;                                                       ;
+; @DESCRIPTION                                          ;
+; Detonate the placed bomb.                             ;
+;-------------------------------------------------------;
+clear_bomb_detonation
+	STMFD sp!, {lr}
+	
+	STR a2, [a1]                ; De-assert bomb detonated flag.
+  
+    ; Insert code which removes '-' and '|' characters here.  
 	
 	LDMFD sp!, {lr}
 	BX lr
@@ -208,6 +495,10 @@ place_bomb
 	STR v1, [a1]
 	LDR a1, =bomb_y_pos
 	STR v2, [a1]
+	
+	LDR a1, =bomb_timer
+	MOV a2, #0
+	STR a2, [a1]               ; Reset bomb timer to 0.
 	
 place_bomb_exit
 	LDMFD sp!, {lr}
@@ -260,9 +551,9 @@ move_bomberman
 	BEQ not_valid_move
 	
 valid_move
-	LDR v5, =keystroke
-	MOV a1, #0
-	STR a1, [v5]
+	;LDR v5, =keystroke
+	;MOV a1, #0
+	;STR a1, [v5]
 	
 	LDR a1, =bomberman_x_pos	   ; Update new bomberman X-position.
 	STR v3, [a1]
@@ -530,6 +821,30 @@ check_pos_exit
 	LDMFD sp!, {v1-v3, lr}
 	BX lr
 
+;-------------------------------------------------------;
+; @NAME                                                 ;
+; check_pos_char	                                    ;
+;                                                       ;
+; @DESCRIPTION                                          ;
+; Checks specified position on game board and returns   ;
+; the char there. X is passed in a1. Y is passed in a2. ; 
+; Returns the char in a1. Note that the origin (0,0)    ; 
+; is defined as the upper left most 'Z'.                ;
+;-------------------------------------------------------;
+check_pos_char
+	STMFD sp!, {v1-v3, lr}
+	MOV v2, #0
+	LDR v1, =board
+	ADD v2, v2, #BOARD_WIDTH          ; The offset is calculated as (board_width*Y)+X.
+	MUL v3, a2, v2
+	ADD v3, v3, a1				
+	
+	ADD v1, v1, v3                    ; Add offset to base address of board string.
+	
+	LDRB a1, [v1]                     ; Finally, load the character into a1 
+	LDMFD sp!, {v1-v3, lr}
+	BX lr
+	
 ;-------------------------------------------------------;
 ; @NAME                                                 ;
 ; check_pos_char	                                    ;
