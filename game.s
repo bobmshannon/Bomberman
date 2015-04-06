@@ -13,8 +13,8 @@
 	
 BRICK_WALL       EQU '#'
 BOMBERMAN        EQU 'B'
-SLOW_ENEMY       EQU 'x'
-FAST_ENEMY       EQU '*'
+ENEMY_SLOW 		 EQU 'x'
+ENEMY_FAST       EQU '*'
 BOMB             EQU 'o'
 BLAST_VERTICAL   EQU '|'
 BLAST_HORIZONTAL EQU '-'
@@ -28,6 +28,15 @@ PLACE_BOMB_KEY   EQU 'x'
 	
 BOMBERMAN_X_START EQU 1              ; Bomberman starting x-position.
 BOMBERMAN_Y_START EQU 1              ; Bomberman starting y-position.
+	
+ENEMY1_X_START	EQU 23				 ; Enemy 1 starting x-position.
+ENEMY1_Y_START	EQU 1                ; Enemy 1 starting y-position.
+
+ENEMY2_X_START	EQU 1				 ; Enemy 2 starting x-position.
+ENEMY2_Y_START	EQU 11               ; Enemy 2 starting y-position.
+	
+ENEMY3_X_START	EQU 23				 ; Enemy 3 (FAST) starting x-position.
+ENEMY3_Y_START	EQU 11               ; Enemy 3 (FAST) starting y-position.
 	
 bomb_placed		DCD 0x00000000       ; Has a bomb been placed?
 bomb_detonated	DCD 0x00000000       ; Has the placed bomb been detonated?
@@ -65,8 +74,8 @@ game_over		DCD 0x00000000
 
 keystroke		DCD 0x00000000
 
-board = "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZZZZZZZZZZZZZZZZZZZZZZZZZ"
-prev_board = "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZZZZZZZZZZZZZZZZZZZZZZZZZ"
+board 		= "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZZZZZZZZZZZZZZZZZZZZZZZZZ"
+prev_board 	= "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZZZZZZZZZZZZZZZZZZZZZZZZZ"
 
 	ALIGN
 	
@@ -86,6 +95,21 @@ initialize_game
 	MOV a2, #BOMBERMAN_Y_START
 	MOV a3, #BOMBERMAN
 	BL update_pos
+	
+	MOV a1, #ENEMY1_X_START
+	MOV a2, #ENEMY1_Y_START
+	MOV a3, #ENEMY_SLOW
+	BL update_pos
+	
+	MOV a1, #ENEMY2_X_START
+	MOV a2, #ENEMY2_Y_START
+	MOV a3, #ENEMY_SLOW
+	BL update_pos
+	
+	MOV a1, #ENEMY3_X_START
+	MOV a2, #ENEMY3_Y_START
+	MOV a3, #ENEMY_FAST
+	BL update_pos	
 	
 	LDMFD sp!, {lr, v1}
 	BX lr
