@@ -144,9 +144,14 @@ update_game
 	
 	LDR a1, =bomb_timer
 	LDR a1, [a1]
-	CMP a1, #BOMB_TIMEOUT        ; Has the bomb timer timed out? If so,
-	BLEQ detonate_bomb           ; detonate the bomb.
-	
+	CMP a1, #BOMB_TIMEOUT        ; Has the bomb timer timed out and is a bomb
+    MOVEQ a1, #1                 ; placed? If so, detonate the bomb.
+	LDR a2, =bomb_placed
+	LDR a2, [a2]
+	CMP a2, #0
+	MOVEQ a2, #-1
+	CMP a1, a2
+	BLEQ detonate_bomb
 	
 	LDR a1, =bomb_timer
 	LDR a2, [a1]
