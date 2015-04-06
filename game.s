@@ -321,13 +321,17 @@ return
 ; them. Skip moving if the enemy is killed              ;
 ;-------------------------------------------------------;
 move_enemies
-	LDMFD SP!, {lr, v1}
+	STMFD SP!, {lr, v1-v2}
 	
 	LDR v1, =enemy1_killed 			; Check if enemy 1 is dead
 	LDR a1, [v1]
 	CMP a1, #0						; If dead, skip moving it
 	BEQ enemy1_move_skip
-	;LDR v1, =enemy1_x_pos
+	LDR v1, =enemy1_x_pos			; Load enemy position
+	LDR v1, [v1]
+	LDR v2, =enemy1_y_pos
+	LDR v2, [v2]
+
 
 enemy1_move_skip
 
@@ -345,8 +349,70 @@ enemy2_move_skip
 
 enemy3_move_skip
 
-	STMFD SP!, {lr, v1}
+	LDMFD SP!, {lr, v1}
 	BX lr
+
+;-------------------------------------------------------;
+; @NAME                                                 ;
+; check_enemy_moves                                     ;
+;                                                       ;
+; @DESCRIPTION                                          ;
+; Determines if an enemy can move anywhere.  X position ;
+; is passed in a1 and Y position in a2.  Direction to   ;
+; move is returned, or 0 if no valid moves are possible ;
+; (1=up, 2=right, 3=down, 4=left)                       ;
+;-------------------------------------------------------;
+check_enemy_moves
+	STMFD SP!, {lr, v1-v3}
+	MOV a1, v1			;Save x and y position to v1-v2
+	MOV a2, v2
+	MOV v3, #0			;v3 keeps track of the valid directions (Bit0=UP, Bit1=RIGHT, Bit2=DOWN, Bit3=LEFT)
+
+	;Check up
+	SUB a2, v2, #1		;Check y-1
+	BL check_pos_char
+	CMP a1, #' '		;Is it a space?  Valid move if so
+	ORREQ v3, v3, #0x01
+	CMP a1, #'B'		;Is it bomberman?  Valid move if so
+	ORREQ v3, v3, #0x01
+
+	;Check right
+	ADD a1, v1, #1		;Check x+1
+	MOV a2, v2   		;Check y
+	BL check_pos_char
+	CMP a1, #' '		;Is it a space?  Valid move if so
+	ORREQ v3, v3, #0x02
+	CMP a1, #'B'		;Is it bomberman?  Valid move if so
+	ORREQ v3, v3, #0x02
+
+	;Check down
+	MOV a1, v1		    ;Check x
+	ADD a2, v2, #1   	;Check y+1
+	BL check_pos_char
+	CMP a1, #' '		;Is it a space?  Valid move if so
+	ORREQ v3, v3, #0x04
+	CMP a1, #'B'		;Is it bomberman?  Valid move if so
+	ORREQ v3, v3, #0x04
+
+	;Check left
+	SUB a1, v1, #1		;Check x-1
+	MOV a2, v2      	;Check y
+	BL check_pos_char
+	CMP a1, #' '		;Is it a space?  Valid move if so
+	ORREQ v3, v3, #0x08
+	CMP a1, #'B'		;Is it bomberman?  Valid move if so
+	ORREQ v3, v3, #0x08
+
+	CMP v3, #0				 	;If we have no valid moves, just return 0 and quit
+	MOVEQ a1, #0
+	BEQ check_enemy_moves_exit
+
+
+
+check_enemy_moves_exit
+	LDMFD SP!, {lr, v1-v3}
+	BX lr
+
 	
 ;-------------------------------------------------------;
 ; @NAME                                                 ;
@@ -463,8 +529,6 @@ check_pos_assert_false
 check_pos_exit
 	LDMFD sp!, {v1-v3, lr}
 	BX lr
-	
-	END
 
 ;-------------------------------------------------------;
 ; @NAME                                                 ;
