@@ -39,6 +39,8 @@ ENEMY3_X_START	EQU 23				 ; Enemy 3 (FAST) starting x-position.
 ENEMY3_Y_START	EQU 11               ; Enemy 3 (FAST) starting y-position.
 	
 BOMB_TIMEOUT    EQU 5                ; After many refreshes the bomb should detonate.
+BLAST_X_RADIUS  EQU 4                ; Horizontal blast radius.
+BLAST_Y_RADIUS  EQU 2                ; Vertical blast radius.
 	
 bomb_placed		DCD 0x00000000       ; Has a bomb been placed?
 bomb_detonated	DCD 0x00000000       ; Has the placed bomb been detonated?
@@ -184,10 +186,73 @@ detonate_bomb
 	MOV a2, #0
 	STR a2, [a1]                 ; De-assert bomb placed flag.
 
-	MOV a1, #0
-	MOV a2, #0
-	MOV a3, #'&'
-	BL update_pos
+	LDR a1, =bomb_x_pos
+	LDR a1, [a1]
+	MOV v1, a1
+	LDR a2, =bomb_y_pos
+	LDR a2, [a2]
+	MOV v2, a2
+	
+	SUB v3, v1, #BLAST_X_RADIUS  ; Lower bound x-position for blast.
+	ADD v4, v1, #BLAST_X_RADIUS  ; Upper bound x-position for blast.
+	
+	SUB v5, v2, #BLAST_Y_RADIUS  ; Lower bound y-position for blast.
+	ADD v6, v2, #BLAST_Y_RADIUS  ; Upper bound y-position for blast.
+	
+detonate_bomb_horizontal
+	; Add code to add '-' and '|' characters, making sure
+	; to not blow up any indestructible stuff. Also need to
+	; check if the blast kills an enemy or bomberman.
+	
+	MOV a1, v3                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v2                   ; Y-position (fixed).
+	BL check_pos_char
+	CMP a1, #BRICK_WALL          ; Is it a brick wall? If so, do nothing.
+	BEQ detonate_bomb_horizontal_next
+
+	MOV a1, v3                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v2                   ; Y-position (fixed).
+	BL check_pos_char
+	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call game_over.
+	; Call game_over
+	
+	MOV a1, v3                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v2                   ; Y-position (fixed).
+	BL check_pos_char
+	CMP a1, #ENEMY_SLOW          ; Is it a slow enemy? If so, call kill_enemy.
+	; Call kill_enemy
+	
+	MOV a1, v3                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v2                   ; Y-position (fixed).
+	BL check_pos_char
+	CMP a1, #ENEMY_FAST          ; Is it a fast enemy? If so, call kill_enemy.
+	; Call kill_enemy
+	
+	MOV a1, v3                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v2                   ; Y-position (fixed).
+	BL check_pos_char
+	CMP a1, #BOMB                ; Is it a bomb? If so, do nothing.
+	BEQ detonate_bomb_horizontal_next
+	
+	MOV a1, v3
+	MOV a2, v2
+	MOV a3, #BLAST_HORIZONTAL
+	BL update_pos                ; Otherwise, draw a '-'. (this is the default case of our "switch statement").
+	
+detonate_bomb_horizontal_next
+	ADD v3, v3, #1               ; Increment X-position.
+	CMP v3, v4
+	BLE detonate_bomb_horizontal
+	
+;detonate_bomb_vertical
+;	ADD v5, v5, #1
+;	CMP v5, v6
+;	BLE detonate_bomb_vertical
+	
+;	MOV a1, #0
+;	MOV a2, #0
+;	MOV a3, #'&'
+;	BL update_pos
 	
 	LDMFD sp!, {lr}
 	BX lr
@@ -466,6 +531,30 @@ check_pos_assert_false
 	MOV a1, #0
 	
 check_pos_exit
+	LDMFD sp!, {v1-v3, lr}
+	BX lr
+	
+;-------------------------------------------------------;
+; @NAME                                                 ;
+; check_pos_char	                                    ;
+;                                                       ;
+; @DESCRIPTION                                          ;
+; Checks specified position on game board and returns   ;
+; the char there. X is passed in a1. Y is passed in a2. ; 
+; Returns the char in a1. Note that the origin (0,0)    ; 
+; is defined as the upper left most 'Z'.                ;
+;-------------------------------------------------------;
+check_pos_char
+	STMFD sp!, {v1-v3, lr}
+	MOV v2, #0
+	LDR v1, =board
+	ADD v2, v2, #BOARD_WIDTH          ; The offset is calculated as (board_width*Y)+X.
+	MUL v3, a2, v2
+	ADD v3, v3, a1				
+	
+	ADD v1, v1, v3                    ; Add offset to base address of board string.
+	
+	LDRB a1, [v1]                     ; Finally, load the character into a1 
 	LDMFD sp!, {v1-v3, lr}
 	BX lr
 	
