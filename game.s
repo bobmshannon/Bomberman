@@ -199,96 +199,213 @@ detonate_bomb
 	SUB v5, v2, #BLAST_Y_RADIUS  ; Lower bound y-position for blast.
 	ADD v6, v2, #BLAST_Y_RADIUS  ; Upper bound y-position for blast.
 
-detonate_bomb_horizontal
-	; Add code to add '-' and '|' characters, making sure
+;-------------------------------------------------------;
+; Destroy everything to the left of the placed bomb.    ;
+; i.e. ----o                                            ;
+;-------------------------------------------------------;
+detonate_bomb_west
+	MOV v7, v1                   ; Initialize X-detonation loop counter.
+	
+detonate_bomb_west_loop
+	; Add '-' and '|' characters, making sure
 	; to not blow up any indestructible stuff. Also need to
 	; check if the blast kills an enemy or bomberman.
 
-	MOV a1, v3                   ; Current X-position (incremented after each loop iteration).
+	MOV a1, v7                   ; Current X-position (decremented after each loop iteration).
 	MOV a2, v2                   ; Y-position (fixed).
 	BL check_pos_char
 	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call game_over.
 	; Call game_over
 	
-	MOV a1, v3                   ; Current X-position (incremented after each loop iteration).
+	MOV a1, v7                   ; Current X-position (decremented after each loop iteration).
 	MOV a2, v2                   ; Y-position (fixed).
 	BL check_pos_char
-	CMP a1, #BARRIER             ; Is it a barrier? If so, do nothing.
-	BEQ detonate_bomb_horizontal_next
+	CMP a1, #BARRIER             ; Is it a barrier? If so, break out of loop.
+	BEQ detonate_bomb_east
 	
-	MOV a1, v3                   ; Current X-position (incremented after each loop iteration).
+	MOV a1, v7                   ; Current X-position (decremented after each loop iteration).
 	MOV a2, v2                   ; Y-position (fixed).
 	BL check_pos_char
 	CMP a1, #ENEMY_SLOW          ; Is it a slow enemy? If so, call kill_enemy.
 	; Call kill_enemy
 	
-	MOV a1, v3                   ; Current X-position (incremented after each loop iteration).
+	MOV a1, v7                   ; Current X-position (decremented after each loop iteration).
 	MOV a2, v2                   ; Y-position (fixed).
 	BL check_pos_char
 	CMP a1, #ENEMY_FAST          ; Is it a fast enemy? If so, call kill_enemy.
 	; Call kill_enemy
 	
-	MOV a1, v3                   ; Current X-position (incremented after each loop iteration).
+	MOV a1, v7                   ; Current X-position (decremented after each loop iteration).
 	MOV a2, v2                   ; Y-position (fixed).
 	BL check_pos_char
 	CMP a1, #BOMB                ; Is it a bomb? If so, do nothing.
-	BEQ detonate_bomb_horizontal_next
+	BEQ detonate_bomb_west_next
 	
-	MOV a1, v3
+	MOV a1, v7
 	MOV a2, v2
 	MOV a3, #BLAST_HORIZONTAL
 	BL update_pos                ; Otherwise, draw a '-'. (this is the default case of our "switch statement").
 	
-detonate_bomb_horizontal_next
-	ADD v3, v3, #1               ; Increment X-position.
-	CMP v3, v4
-	BLE detonate_bomb_horizontal
+detonate_bomb_west_next
+	SUB v7, v7, #1               ; Decrement X-position.
+	CMP v7, v3
+	BGE detonate_bomb_west_loop
 	
-detonate_bomb_vertical
-	; Add code to add '-' and '|' characters, making sure
+;-------------------------------------------------------;
+; Destroy everything to the right of the placed bomb.   ;
+; i.e. o----                                            ;
+;-------------------------------------------------------;
+detonate_bomb_east
+	MOV v7, v1                   ; Initialize X-detonation loop counter.
+	
+detonate_bomb_east_loop
+	; Add '-' and '|' characters, making sure
 	; to not blow up any indestructible stuff. Also need to
 	; check if the blast kills an enemy or bomberman.
 
-	MOV a1, v1                   ; X-position (fixed).
-	MOV a2, v5                   ; Y-position (incremented at the end of each loop iteration).
+	MOV a1, v7                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v2                   ; Y-position (fixed).
 	BL check_pos_char
 	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call game_over.
 	; Call game_over
 	
-	MOV a1, v1                   ; X-position (fixed).
-	MOV a2, v5                   ; Y-position (incremented at the end of each loop iteration).
+	MOV a1, v7                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v2                   ; Y-position (fixed).
 	BL check_pos_char
-	CMP a1, #BARRIER           ; Is it a barrier? If so, do nothing.
-	BEQ detonate_bomb_vertical_next
+	CMP a1, #BARRIER             ; Is it a barrier? If so, break out of loop.
+	BEQ detonate_bomb_north
+	
+	MOV a1, v7                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v2                   ; Y-position (fixed).
+	BL check_pos_char
+	CMP a1, #ENEMY_SLOW          ; Is it a slow enemy? If so, call kill_enemy.
+	; Call kill_enemy
+	
+	MOV a1, v7                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v2                   ; Y-position (fixed).
+	BL check_pos_char
+	CMP a1, #ENEMY_FAST          ; Is it a fast enemy? If so, call kill_enemy.
+	; Call kill_enemy
+	
+	MOV a1, v7                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v2                   ; Y-position (fixed).
+	BL check_pos_char
+	CMP a1, #BOMB                ; Is it a bomb? If so, do nothing.
+	BEQ detonate_bomb_east_next
+	
+	MOV a1, v7
+	MOV a2, v2
+	MOV a3, #BLAST_HORIZONTAL
+	BL update_pos                ; Otherwise, draw a '-'. (this is the default case of our "switch statement").
+	
+detonate_bomb_east_next
+	ADD v7, v7, #1               ; Increment X-position.
+	CMP v7, v4
+	BLE detonate_bomb_east_loop
+	
+;-------------------------------------------------------;
+; Destroy everything below the placed bomb.             ;
+;-------------------------------------------------------;
+detonate_bomb_south
+	MOV v7, v2                   ; Initialize Y-detonation loop counter.
+	
+detonate_bomb_south_loop
+	; Add '-' and '|' characters, making sure
+	; to not blow up any indestructible stuff. Also need to
+	; check if the blast kills an enemy or bomberman.
+
+	MOV a1, v1                   ; X-position (fixed).
+	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
+	BL check_pos_char
+	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call game_over.
+	; Call game_over
 	
 	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
-	MOV a2, v5                   ; Y-position (fixed).
+	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
+	BL check_pos_char
+	CMP a1, #BARRIER             ; Is it a barrier? If so, break out of loop.
+	BEQ detonate_bomb_north
+	
+	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
 	BL check_pos_char
 	CMP a1, #ENEMY_SLOW          ; Is it a slow enemy? If so, call kill_enemy.
 	; Call kill_enemy
 	
 	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
-	MOV a2, v5                   ; Y-position (fixed).
+	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
 	BL check_pos_char
 	CMP a1, #ENEMY_FAST          ; Is it a fast enemy? If so, call kill_enemy.
 	; Call kill_enemy
 	
 	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
-	MOV a2, v5                   ; Y-position (fixed).
+	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
 	BL check_pos_char
 	CMP a1, #BOMB                ; Is it a bomb? If so, do nothing.
-	BEQ detonate_bomb_vertical_next
+	BEQ detonate_bomb_south_next
 	
 	MOV a1, v1
-	MOV a2, v5
+	MOV a2, v7
 	MOV a3, #BLAST_VERTICAL
 	BL update_pos                ; Otherwise, draw a '-'. (this is the default case of our "switch statement").
 	
-detonate_bomb_vertical_next
-	ADD v5, v5, #1               ; Increment X-position.
-	CMP v5, v6
-	BLE detonate_bomb_vertical
+detonate_bomb_south_next
+	ADD v7, v7, #1               ; Increment Y-position.
+	CMP v7, v6
+	BLE detonate_bomb_south_loop
 	
+;-------------------------------------------------------;
+; Destroy everything above the placed bomb.             ;
+;-------------------------------------------------------;
+detonate_bomb_north
+	MOV v7, v2                   ; Initialize Y-detonation loop counter.
+	
+detonate_bomb_north_loop
+	; Add '-' and '|' characters, making sure
+	; to not blow up any indestructible stuff. Also need to
+	; check if the blast kills an enemy or bomberman.
+
+	MOV a1, v1                   ; X-position (fixed).
+	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
+	BL check_pos_char
+	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call game_over.
+	; Call game_over
+	
+	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
+	BL check_pos_char
+	CMP a1, #BARRIER             ; Is it a barrier? If so, break out of loop.
+	BEQ detonate_bomb_exit
+	
+	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
+	BL check_pos_char
+	CMP a1, #ENEMY_SLOW          ; Is it a slow enemy? If so, call kill_enemy.
+	; Call kill_enemy
+	
+	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
+	BL check_pos_char
+	CMP a1, #ENEMY_FAST          ; Is it a fast enemy? If so, call kill_enemy.
+	; Call kill_enemy
+	
+	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
+	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
+	BL check_pos_char
+	CMP a1, #BOMB                ; Is it a bomb? If so, do nothing.
+	BEQ detonate_bomb_north_next
+	
+	MOV a1, v1
+	MOV a2, v7
+	MOV a3, #BLAST_VERTICAL
+	BL update_pos                ; Otherwise, draw a '-'. (this is the default case of our "switch statement").
+	
+detonate_bomb_north_next
+	SUB v7, v7, #1               ; Decrement Y-position.
+	CMP v7, v5
+	BGE detonate_bomb_north_loop
+
+detonate_bomb_exit
 	LDMFD sp!, {lr}
 	BX lr
 
