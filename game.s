@@ -38,6 +38,8 @@ ENEMY2_Y_START	EQU 11               ; Enemy 2 starting y-position.
 ENEMY3_X_START	EQU 23				 ; Enemy 3 (FAST) starting x-position.
 ENEMY3_Y_START	EQU 11               ; Enemy 3 (FAST) starting y-position.
 	
+BOMB_TIMEOUT    EQU 5                ; After many refreshes the bomb should detonate.
+	
 bomb_placed		DCD 0x00000000       ; Has a bomb been placed?
 bomb_detonated	DCD 0x00000000       ; Has the placed bomb been detonated?
 bomb_timer		DCD 0x00000000       ; Bomb detonation timer.
@@ -123,6 +125,13 @@ initialize_game
 ;-------------------------------------------------------;
 update_game
     STMFD sp!, {lr}
+	
+	LDR a1, =bomb_detonated
+	LDR a3, [a1]
+	MOV a2, #0
+	CMP a3, #1
+	BLEQ clear_bomb_detonation   ; Remove remnants from bomb blast.
+	
 	LDR  a1, =keystroke
 	LDR a1, [a1]
 	BL move_bomberman            ; Move bomberman.
@@ -130,11 +139,67 @@ update_game
 	LDR a1, =keystroke
 	LDR a1, [a1]
 	CMP a1, #PLACE_BOMB_KEY
-	BLEQ place_bomb
+	BLEQ place_bomb              ; Place bomb if keystroke is 'x'
+	                             ; and a bomb is not already placed.
+	
+	LDR a1, =bomb_timer
+	LDR a1, [a1]
+	CMP a1, #BOMB_TIMEOUT        ; Has the bomb timer timed out? If so,
+	BLEQ detonate_bomb           ; detonate the bomb.
+	
+	
+	LDR a1, =bomb_timer
+	LDR a2, [a1]
+	ADD a2, a2, #1               
+	STR a2, [a1]                 ; Increment bomb timer.
+	
 	
 	LDR v1, =keystroke
 	MOV a1, #0                   ; Reset keystroke.
 	STR a1, [v1]
+	
+	LDMFD sp!, {lr}
+	BX lr
+	
+;-------------------------------------------------------;
+; @NAME                                                 ;
+; detonate_bomb                                         ;
+;                                                       ;
+; @DESCRIPTION                                          ;
+; Detonate the placed bomb.                             ;
+;-------------------------------------------------------;
+detonate_bomb
+	STMFD sp!, {lr}
+	
+	LDR a1, =bomb_detonated
+	MOV a2, #1
+	STR a2, [a1]                 ; Assert bomb detonated flag.
+	
+	LDR a1, =bomb_placed
+	MOV a2, #0
+	STR a2, [a1]                 ; De-assert bomb placed flag.
+
+	MOV a1, #0
+	MOV a2, #0
+	MOV a3, #'&'
+	BL update_pos
+	
+	LDMFD sp!, {lr}
+	BX lr
+
+;-------------------------------------------------------;
+; @NAME                                                 ;
+; clear_bomb_detonation                                 ;
+;                                                       ;
+; @DESCRIPTION                                          ;
+; Detonate the placed bomb.                             ;
+;-------------------------------------------------------;
+clear_bomb_detonation
+	STMFD sp!, {lr}
+	
+	STR a2, [a1]                ; De-assert bomb detonated flag.
+  
+    ; Insert code which removes '-' and '|' characters here.  
 	
 	LDMFD sp!, {lr}
 	BX lr
@@ -175,6 +240,10 @@ place_bomb
 	STR v1, [a1]
 	LDR a1, =bomb_y_pos
 	STR v2, [a1]
+	
+	LDR a1, =bomb_timer
+	MOV a2, #0
+	STR a2, [a1]               ; Reset bomb timer to 0.
 	
 place_bomb_exit
 	LDMFD sp!, {lr}
