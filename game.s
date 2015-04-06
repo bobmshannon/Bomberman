@@ -845,28 +845,4 @@ check_pos_char
 	LDMFD sp!, {v1-v3, lr}
 	BX lr
 	
-;-------------------------------------------------------;
-; @NAME                                                 ;
-; check_pos_char	                                    ;
-;                                                       ;
-; @DESCRIPTION                                          ;
-; Checks specified position on game board and returns   ;
-; the char there. X is passed in a1. Y is passed in a2. ; 
-; Returns the char in a1. Note that the origin (0,0)    ; 
-; is defined as the upper left most 'Z'.                ;
-;-------------------------------------------------------;
-check_pos_char
-	STMFD sp!, {v1-v3, lr}
-	MOV v2, #0
-	LDR v1, =board
-	ADD v2, v2, #BOARD_WIDTH          ; The offset is calculated as (board_width*Y)+X.
-	MUL v3, a2, v2
-	ADD v3, v3, a1				
-	
-	ADD v1, v1, v3                    ; Add offset to base address of board string.
-	
-	LDRB a1, [v1]                     ; Finally, load the character into a1 
-	LDMFD sp!, {v1-v3, lr}
-	BX lr
-	
 	END
