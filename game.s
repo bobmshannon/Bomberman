@@ -209,7 +209,7 @@ update_game
 ; Detonate the placed bomb.                             ;
 ;-------------------------------------------------------;
 detonate_bomb
-	STMFD sp!, {lr}
+	STMFD sp!, {lr, v1-v8}
 	
 	LDR a1, =bomb_detonated
 	MOV a2, #1
@@ -439,7 +439,7 @@ detonate_bomb_north_next
 	BGE detonate_bomb_north_loop
 
 detonate_bomb_exit
-	LDMFD sp!, {lr}
+	LDMFD sp!, {lr, v1-v8}
 	BX lr
 
 ;-------------------------------------------------------;
