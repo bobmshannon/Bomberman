@@ -85,33 +85,66 @@ prev_board 	= "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z
 ;                                                       ;
 ; @DESCRIPTION                                          ;
 ; Initialize the game. Add enemies and generate brick   ;
-; walls.                                                ;
+; walls. Reset positions and flags for gameplay         ;
 ;-------------------------------------------------------;
 initialize_game
-	STMFD sp!, {lr, v1}
-	BL generate_brick_walls
+	STMFD sp!, {lr, a1-a3, v1}
 	
+	MOV a1, #0						; Reset bomb placement (Let you place a bomb right away)
+	LDR v1, =bomb_placed
+	STR a1, [v1]
+
+	MOV a1, #3						; Reset enemy live count to 3
+	LDR v1, =num_enemies
+	STR a1, [v1]
+
 	MOV a1, #BOMBERMAN_X_START
 	MOV a2, #BOMBERMAN_Y_START
 	MOV a3, #BOMBERMAN
 	BL update_pos
+	LDR v1, =bomberman_x_pos		; Reset bomberman position  		
+	STR a1, [v1]
+	LDR v1, =bomberman_y_pos
+	STR a2, [v1]
 	
 	MOV a1, #ENEMY1_X_START
 	MOV a2, #ENEMY1_Y_START
 	MOV a3, #ENEMY_SLOW
 	BL update_pos
-	
+	LDR v1, =enemy1_x_pos			; Reset enemy1 position  		
+	STR a1, [v1]
+	LDR v1, =enemy1_y_pos
+	STR a2, [v1]
+	LDR v1, =enemy1_killed			; Set enemy1 not killed
+	MOV a1, #0
+	STR a1, [v1]	
+
 	MOV a1, #ENEMY2_X_START
 	MOV a2, #ENEMY2_Y_START
 	MOV a3, #ENEMY_SLOW
 	BL update_pos
+	LDR v1, =enemy2_x_pos			; Reset enemy2 position  		
+	STR a1, [v1]
+	LDR v1, =enemy2_y_pos
+	STR a2, [v1]
+	LDR v1, =enemy2_killed			; Set enemy1 not killed
+	MOV a1, #0
+	STR a1, [v1]
 	
 	MOV a1, #ENEMY3_X_START
 	MOV a2, #ENEMY3_Y_START
 	MOV a3, #ENEMY_FAST
-	BL update_pos	
-	
-	LDMFD sp!, {lr, v1}
+	BL update_pos
+	LDR v1, =enemy3_x_pos			; Reset enemy3 position  		
+	STR a1, [v1]
+	LDR v1, =enemy3_y_pos
+	STR a2, [v1]
+	LDR v1, =enemy3_killed			; Set enemy1 not killed
+	MOV a1, #0
+	STR a1, [v1]	
+
+	BL generate_brick_walls	
+	LDMFD sp!, {lr, a1-a3, v1}
 	BX lr
 
 ;-------------------------------------------------------;
