@@ -227,9 +227,9 @@ move_bomberman
 	BEQ not_valid_move
 	
 valid_move
-	LDR v5, =keystroke
-	MOV a1, #0
-	STR a1, [v5]
+	;LDR v5, =keystroke
+	;MOV a1, #0
+	;STR a1, [v5]
 	
 	LDR a1, =bomberman_x_pos	   ; Update new bomberman X-position.
 	STR v3, [a1]
