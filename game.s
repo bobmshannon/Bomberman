@@ -88,7 +88,7 @@ prev_board 	= "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z
 ; walls. Reset positions and flags for gameplay         ;
 ;-------------------------------------------------------;
 initialize_game
-	STMFD sp!, {lr, a1-a3, v1}
+	STMFD sp!, {lr, v1}
 	
 	MOV a1, #0						; Reset bomb placement (Let you place a bomb right away)
 	LDR v1, =bomb_placed
@@ -144,7 +144,7 @@ initialize_game
 	STR a1, [v1]	
 
 	BL generate_brick_walls	
-	LDMFD sp!, {lr, a1-a3, v1}
+	LDMFD sp!, {lr, v1}
 	BX lr
 
 ;-------------------------------------------------------;
@@ -311,6 +311,42 @@ not_valid_move
 return
 	LDMFD sp!, {lr}
 	BX lr
+
+;-------------------------------------------------------;
+; @NAME                                                 ;
+; move_enemies                                          ;
+;                                                       ;
+; @DESCRIPTION                                          ;
+; Move the enemies if any open space is available       ;
+; them. Skip moving if the enemy is killed              ;
+;-------------------------------------------------------;
+move_enemies
+	LDMFD SP!, {lr, v1}
+	
+	LDR v1, =enemy1_killed 			; Check if enemy 1 is dead
+	LDR a1, [v1]
+	CMP a1, #0						; If dead, skip moving it
+	BEQ enemy1_move_skip
+	;LDR v1, =enemy1_x_pos
+
+enemy1_move_skip
+
+	LDR v1, =enemy2_killed 			; Check if enemy 2 is dead
+	LDR a1, [v1]
+	CMP a1, #0						; If dead, skip moving it
+	BEQ enemy2_move_skip
+
+enemy2_move_skip
+
+	LDR v1, =enemy3_killed 			; Check if enemy 3 is dead
+	LDR a1, [v1]
+	CMP a1, #0						; If dead, skip moving it
+	BEQ enemy3_move_skip
+
+enemy3_move_skip
+
+	STMFD SP!, {lr, v1}
+	BX lr
 	
 ;-------------------------------------------------------;
 ; @NAME                                                 ;
@@ -425,6 +461,32 @@ check_pos_assert_false
 	MOV a1, #0
 	
 check_pos_exit
+	LDMFD sp!, {v1-v3, lr}
+	BX lr
+	
+	END
+
+;-------------------------------------------------------;
+; @NAME                                                 ;
+; check_pos_char	                                    ;
+;                                                       ;
+; @DESCRIPTION                                          ;
+; Checks specified position on game board and returns   ;
+; the char there. X is passed in a1. Y is passed in a2. ; 
+; Returns the char in a1. Note that the origin (0,0)    ; 
+; is defined as the upper left most 'Z'.                ;
+;-------------------------------------------------------;
+check_pos_char
+	STMFD sp!, {v1-v3, lr}
+	MOV v2, #0
+	LDR v1, =board
+	ADD v2, v2, #BOARD_WIDTH          ; The offset is calculated as (board_width*Y)+X.
+	MUL v3, a2, v2
+	ADD v3, v3, a1				
+	
+	ADD v1, v1, v3                    ; Add offset to base address of board string.
+	
+	LDRB a1, [v1]                     ; Finally, load the character into a1 
 	LDMFD sp!, {v1-v3, lr}
 	BX lr
 	
