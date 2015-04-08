@@ -385,7 +385,7 @@ read_push_btns
 	BX lr
 	
 ; -----------------------------------------------------------------------------------;
-; rand is a linear congruence generator which returns a pseudo-random 32bit number   ;
+; rand is a linear congruence generator which returns a pseudo-random 16bit number   ;
 ; in register r0. 																     ;
 ;                                                                                    ;
 ; For more info, see: http://en.wikipedia.org/wiki/Linear_congruential_generator	 ;													 	 ;

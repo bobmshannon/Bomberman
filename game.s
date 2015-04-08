@@ -176,6 +176,8 @@ update_game
 	LDR a1, [a1]
 	BL move_bomberman            ; Move bomberman.
 	
+	BL move_enemies				 ; Move all enemies
+
 	LDR a1, =keystroke
 	LDR a1, [a1]
 	CMP a1, #PLACE_BOMB_KEY
@@ -617,11 +619,11 @@ return
 ; them. Skip moving if the enemy is killed              ;
 ;-------------------------------------------------------;
 move_enemies
-	STMFD SP!, {lr, v1-v2}
+	STMFD SP!, {lr, v1-v3}
 	
 	LDR v1, =enemy1_killed 			; Check if enemy 1 is dead
 	LDR a1, [v1]
-	CMP a1, #0						; If dead, skip moving it
+	CMP a1, #1						; If dead, skip moving it
 	BEQ enemy1_move_skip
 	LDR v1, =enemy1_x_pos			; Load enemy position into v1 and v2
 	LDR v1, [v1]
@@ -648,17 +650,22 @@ move_enemies
 	ADDEQ v2, v2, #1				; Going down! (Y + 1)  (13 degrees down angle!)
 	CMP v3, #MOVE_LEFT
 	SUBEQ v1, v1, #1				; Going left! (X - 1)
+
+	LDR v3, =enemy1_x_pos		   	; Update enemy's position
+	STR v1, [v3]
+	LDR v3, =enemy1_y_pos
+	STR v2, [v3]
 	
 	MOV a1, v1						; Put new location in argument registers
 	MOV a2, v2
 	MOV a3, #ENEMY_SLOW
-	BL update_pos
+	BL update_pos				    ; Draw new position
 
 enemy1_move_skip
 
 	LDR v1, =enemy2_killed 			; Check if enemy 2 is dead
 	LDR a1, [v1]
-	CMP a1, #0						; If dead, skip moving it
+	CMP a1, #1						; If dead, skip moving it
 	BEQ enemy2_move_skip
 	LDR v1, =enemy2_x_pos			; Load enemy position into v1 and v2
 	LDR v1, [v1]
@@ -686,6 +693,11 @@ enemy1_move_skip
 	CMP v3, #MOVE_LEFT
 	SUBEQ v1, v1, #1				; Going left! (X - 1)
 	
+	LDR v3, =enemy2_x_pos		   	; Update enemy's position
+	STR v1, [v3]
+	LDR v3, =enemy2_y_pos
+	STR v2, [v3]
+
 	MOV a1, v1						; Put new location in argument registers
 	MOV a2, v2
 	MOV a3, #ENEMY_SLOW
@@ -695,7 +707,7 @@ enemy2_move_skip
 
 	LDR v1, =enemy3_killed 			; Check if enemy 3 is dead
 	LDR a1, [v1]
-	CMP a1, #0						; If dead, skip moving it
+	CMP a1, #1						; If dead, skip moving it
 	BEQ enemy3_move_skip
 	LDR v1, =enemy3_x_pos			; Load enemy position into v1 and v2
 	LDR v1, [v1]
@@ -723,14 +735,19 @@ enemy2_move_skip
 	CMP v3, #MOVE_LEFT
 	SUBEQ v1, v1, #1				; Going left! (X - 1)
 	
+	LDR v3, =enemy3_x_pos		   	; Update enemy's position
+	STR v1, [v3]
+	LDR v3, =enemy3_y_pos
+	STR v2, [v3]
+
 	MOV a1, v1						; Put new location in argument registers
 	MOV a2, v2
-	MOV a3, #ENEMY_SLOW
+	MOV a3, #ENEMY_FAST
 	BL update_pos
 
 enemy3_move_skip
 
-	LDMFD SP!, {lr, v1}
+	LDMFD SP!, {lr, v1-v3}
 	BX lr
 
 ;-------------------------------------------------------;
@@ -791,11 +808,12 @@ check_enemy_moves
 	;If we're here, we have valid moves.  Pick a random one
 check_enemy_moves_pick_rand
 	BL rand				;get a random number
-	AND a1, a1, #0x03	;Keep the lower 3 bits for a number from 0-3
-	MOV a2, v3, LSL a1	;Copy valid moves and shift right to examine selected move
+	AND a1, a1, #0xC000	;Keep the upper 2 bits
+	MOV a1, a1, LSR #14	 ;Move the bits to the lower digits for a number from 0-3
+	MOV a2, v3, LSR a1	;Copy valid moves and shift right to examine selected move
 	ANDS a2, #0x01		;Keep only LSB.  If it's one, we have a valid move.
 	BEQ check_enemy_moves_pick_rand		;result is zero, selected move is not zero
-	
+	ADD a1, a1, #1		;Increment the move number to shift from 0-3 to 1-4
 	;a1 contains the number of the valid move.  Return it
 
 check_enemy_moves_exit
