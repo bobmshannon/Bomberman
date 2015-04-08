@@ -69,6 +69,8 @@ enemy3_x_pos	DCD 0x00000000
 enemy3_y_pos	DCD 0x00000000
 enemy3_killed	DCD 0x00000000
 
+enemy_slow_moved DCD 0x00000000		 ; Did the slow enemies move last frame?
+
 num_enemies		DCD 0x00000000
 
 num_lives		DCD 0x00000000
@@ -106,6 +108,10 @@ initialize_game
 	MOV a1, #3						; Reset enemy live count to 3
 	LDR v1, =num_enemies
 	STR a1, [v1]
+
+	MOV a1, #0						; Reset the enemy delay flag
+	LDR v1, =enemy_slow_moved
+	STR a1, [v1]	
 
 	MOV a1, #BOMBERMAN_X_START
 	MOV a2, #BOMBERMAN_Y_START
@@ -621,6 +627,16 @@ return
 move_enemies
 	STMFD SP!, {lr, v1-v3}
 	
+	LDR v1, =enemy_slow_moved		; Check if the slow enemies moved last frame
+	LDR a1, [v1]
+	CMP a1, #1
+	MOVEQ a1, #0					; If they did, reset the flag and skip to enemy three
+	STREQ a1, [v1]
+	BEQ enemy2_move_skip
+	MOV a1, #1						; If they didn't, set the flag and continue execution
+	STR a1, [v1]
+
+
 	LDR v1, =enemy1_killed 			; Check if enemy 1 is dead
 	LDR a1, [v1]
 	CMP a1, #1						; If dead, skip moving it
