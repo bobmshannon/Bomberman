@@ -26,6 +26,11 @@ DOWN_KEY         EQU 's'
 RIGHT_KEY        EQU 'd'
 PLACE_BOMB_KEY   EQU 'x'
 	
+MOVE_UP 		 EQU 1
+MOVE_RIGHT 		 EQU 2
+MOVE_DOWN 		 EQU 3
+MOVE_LEFT 		 EQU 4
+	
 BOMBERMAN_X_START EQU 1              ; Bomberman starting x-position.
 BOMBERMAN_Y_START EQU 1              ; Bomberman starting y-position.
 	
@@ -618,13 +623,36 @@ move_enemies
 	LDR a1, [v1]
 	CMP a1, #0						; If dead, skip moving it
 	BEQ enemy1_move_skip
-	LDR v1, =enemy1_x_pos			; Load enemy position
+	LDR v1, =enemy1_x_pos			; Load enemy position into v1 and v2
 	LDR v1, [v1]
 	LDR v2, =enemy1_y_pos
 	LDR v2, [v2]
 	MOV a1, v1						; Copy location to argument registers and see if we can move
 	MOV a2, v2
+	BL check_enemy_moves
+	CMP a1, #0
+	BEQ enemy1_move_skip			; If no move available, skip
 	
+	;If we're here, we have a valid move.  Erase the previous character and write the new one
+	MOV v3, a1						; Save selected direction
+	MOV a1, v1
+	MOV a2, v2
+	MOV a3, #FREE
+	BL update_pos					; Clear the previous space
+	
+	CMP v3, #MOVE_UP				; See which direction we're going
+	SUBEQ v2, v2, #1				; Going up! (Y - 1)
+	CMP v3, #MOVE_RIGHT
+	ADDEQ v1, v1, #1				; Going right! (X + 1)
+	CMP v3, #MOVE_DOWN
+	ADDEQ v2, v2, #1				; Going down! (Y + 1)  (13 degrees down angle!)
+	CMP v3, #MOVE_LEFT
+	SUBEQ v1, v1, #1				; Going left! (X - 1)
+	
+	MOV a1, v1						; Put new location in argument registers
+	MOV a2, v2
+	MOV a3, #ENEMY_SLOW
+	BL update_pos
 
 enemy1_move_skip
 
@@ -632,6 +660,36 @@ enemy1_move_skip
 	LDR a1, [v1]
 	CMP a1, #0						; If dead, skip moving it
 	BEQ enemy2_move_skip
+	LDR v1, =enemy2_x_pos			; Load enemy position into v1 and v2
+	LDR v1, [v1]
+	LDR v2, =enemy2_y_pos
+	LDR v2, [v2]
+	MOV a1, v1						; Copy location to argument registers and see if we can move
+	MOV a2, v2
+	BL check_enemy_moves
+	CMP a1, #0
+	BEQ enemy2_move_skip			; If no move available, skip
+	
+	;If we're here, we have a valid move.  Erase the previous character and write the new one
+	MOV v3, a1						; Save selected direction
+	MOV a1, v1
+	MOV a2, v2
+	MOV a3, #FREE
+	BL update_pos					; Clear the previous space
+	
+	CMP v3, #MOVE_UP				; See which direction we're going
+	SUBEQ v2, v2, #1				; Going up! (Y - 1)
+	CMP v3, #MOVE_RIGHT
+	ADDEQ v1, v1, #1				; Going right! (X + 1)
+	CMP v3, #MOVE_DOWN
+	ADDEQ v2, v2, #1				; Going down! (Y + 1)  (13 degrees down angle!)
+	CMP v3, #MOVE_LEFT
+	SUBEQ v1, v1, #1				; Going left! (X - 1)
+	
+	MOV a1, v1						; Put new location in argument registers
+	MOV a2, v2
+	MOV a3, #ENEMY_SLOW
+	BL update_pos
 
 enemy2_move_skip
 
@@ -639,6 +697,36 @@ enemy2_move_skip
 	LDR a1, [v1]
 	CMP a1, #0						; If dead, skip moving it
 	BEQ enemy3_move_skip
+	LDR v1, =enemy3_x_pos			; Load enemy position into v1 and v2
+	LDR v1, [v1]
+	LDR v2, =enemy3_y_pos
+	LDR v2, [v2]
+	MOV a1, v1						; Copy location to argument registers and see if we can move
+	MOV a2, v2
+	BL check_enemy_moves
+	CMP a1, #0
+	BEQ enemy3_move_skip			; If no move available, skip
+	
+	;If we're here, we have a valid move.  Erase the previous character and write the new one
+	MOV v3, a1						; Save selected direction
+	MOV a1, v1
+	MOV a2, v2
+	MOV a3, #FREE
+	BL update_pos					; Clear the previous space
+	
+	CMP v3, #MOVE_UP				; See which direction we're going
+	SUBEQ v2, v2, #1				; Going up! (Y - 1)
+	CMP v3, #MOVE_RIGHT
+	ADDEQ v1, v1, #1				; Going right! (X + 1)
+	CMP v3, #MOVE_DOWN
+	ADDEQ v2, v2, #1				; Going down! (Y + 1)  (13 degrees down angle!)
+	CMP v3, #MOVE_LEFT
+	SUBEQ v1, v1, #1				; Going left! (X - 1)
+	
+	MOV a1, v1						; Put new location in argument registers
+	MOV a2, v2
+	MOV a3, #ENEMY_SLOW
+	BL update_pos
 
 enemy3_move_skip
 
