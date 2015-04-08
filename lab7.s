@@ -38,11 +38,27 @@ lab7
 	
 	BL initialize_game
 	
+	;Start the timer.  Let the games begin!
+	LDR a1, =T0TCR
+	MOV a2, #1
+	STR a2, [a1]
+	
 game_loop	
+	LDR a1, =refresh_timer_fired
+	MOV a2, #0
+	STR a2, [a1]
+	
 	BL update_game
 	BL draw
-
+	
+wait
+	LDR a1, =refresh_timer_fired
+	LDR a1, [a1]
+	CMP a1, #1
+	BNE wait
+	
 	B game_loop
+	
 	
 exit
 	LDMFD sp!, {lr, r0-r4}
@@ -91,7 +107,8 @@ timer_init
 	STR r1, [r0]
 	
 	LDR r0, =T0MR0
-	LDR r1, =0x2328A7		;Set MR0 to .125 second intervals
+	;LDR r1, =0x8CA29C		;Set MR0 to .5 second intervals
+	LDR r1, =0x1C2000       ;Set MR0 to 0.1 second intervals
 	STR r1, [r0]
 	
 	LDMFD SP!, {r0-r3, lr}
