@@ -622,7 +622,9 @@ move_enemies
 	LDR v1, [v1]
 	LDR v2, =enemy1_y_pos
 	LDR v2, [v2]
-
+	MOV a1, v1						; Copy location to argument registers and see if we can move
+	MOV a2, v2
+	
 
 enemy1_move_skip
 
@@ -698,7 +700,15 @@ check_enemy_moves
 	MOVEQ a1, #0
 	BEQ check_enemy_moves_exit
 
-
+	;If we're here, we have valid moves.  Pick a random one
+check_enemy_moves_pick_rand
+	BL rand				;get a random number
+	AND a1, a1, #0x03	;Keep the lower 3 bits for a number from 0-3
+	MOV a2, v3, LSL a1	;Copy valid moves and shift right to examine selected move
+	ANDS a2, #0x01		;Keep only LSB.  If it's one, we have a valid move.
+	BEQ check_enemy_moves_pick_rand		;result is zero, selected move is not zero
+	
+	;a1 contains the number of the valid move.  Return it
 
 check_enemy_moves_exit
 	LDMFD SP!, {lr, v1-v3}
