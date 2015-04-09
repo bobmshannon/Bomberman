@@ -190,15 +190,13 @@ update_game
 	                             ; and a bomb is not already placed.
 	
 	LDR a1, =bomb_timer
-	LDR a1, [a1]
-	CMP a1, #BOMB_TIMEOUT        ; Has the bomb timer timed out and is a bomb
-    MOVEQ a1, #1                 ; placed? If so, detonate the bomb.
+	LDR a1, [a1]       
 	LDR a2, =bomb_placed
 	LDR a2, [a2]
 	CMP a2, #1
-	MOVEQ a2, #5
-	CMP a1, a2
-	BLEQ detonate_bomb
+	MOVEQ a2, #BOMB_TIMEOUT   
+	CMP a1, a2                ; Has the bomb timer timed out and is a bomb
+	BLEQ detonate_bomb        ; placed? If so, detonate the bomb.
 	
 	LDR a1, =bomb_timer
 	LDR a2, [a1]
@@ -222,6 +220,11 @@ update_game
 ;-------------------------------------------------------;
 detonate_bomb
 	STMFD sp!, {lr, v1-v8}
+	
+	LDR a1, =bomb_placed
+	LDR a1, [a1]
+	CMP a1, #0
+	BEQ detonate_bomb_exit       ; No bomb is placed, nothing to detonate. Exit.
 	
 	LDR a1, =bomb_detonated
 	MOV a2, #1
@@ -479,13 +482,12 @@ kill_enemy
 ; Detonate the placed bomb.                             ;
 ;-------------------------------------------------------;
 clear_bomb_detonation
-	STMFD sp!, {lr}
+	STMFD sp!, {lr, v1-v6}
 	
-	STR a2, [a1]                ; De-assert bomb detonated flag.
-  
-    ; Insert code which removes '-' and '|' characters here.  
-	
-	LDMFD sp!, {lr}
+
+
+clear_bomb_detonation_exit
+	LDMFD sp!, {lr, v1-v6}
 	BX lr
 	
 ;-------------------------------------------------------;
