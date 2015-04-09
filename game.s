@@ -174,7 +174,6 @@ update_game
 	
 	LDR a1, =bomb_detonated
 	LDR a3, [a1]
-	MOV a2, #0
 	CMP a3, #1
 	BLEQ clear_bomb_detonation   ; Remove remnants from bomb blast.
 	
@@ -196,8 +195,8 @@ update_game
     MOVEQ a1, #1                 ; placed? If so, detonate the bomb.
 	LDR a2, =bomb_placed
 	LDR a2, [a2]
-	CMP a2, #0
-	MOVEQ a2, #-1
+	CMP a2, #1
+	MOVEQ a2, #5
 	CMP a1, a2
 	BLEQ detonate_bomb
 	
@@ -273,6 +272,7 @@ detonate_bomb_west_loop
 	MOV a2, v2                   ; Y-position (fixed).
 	BL check_pos_char
 	CMP a1, #ENEMY_SLOW          ; Is it a slow enemy? If so, call kill_enemy.
+	
 	; Call kill_enemy
 	
 	MOV a1, v7                   ; Current X-position (decremented after each loop iteration).
@@ -375,8 +375,10 @@ detonate_bomb_south_loop
 	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
 	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
 	BL check_pos_char
+	MOV a2, v1
+	MOV a3, v2
 	CMP a1, #ENEMY_SLOW          ; Is it a slow enemy? If so, call kill_enemy.
-	; Call kill_enemy
+	BLEQ kill_enemy
 	
 	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
 	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
@@ -427,6 +429,7 @@ detonate_bomb_north_loop
 	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
 	BL check_pos_char
 	CMP a1, #ENEMY_SLOW          ; Is it a slow enemy? If so, call kill_enemy.
+	
 	; Call kill_enemy
 	
 	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
@@ -454,6 +457,19 @@ detonate_bomb_north_next
 detonate_bomb_exit
 	LDMFD sp!, {lr, v1-v8}
 	BX lr
+
+;-------------------------------------------------------;
+; @NAME                                                 ;
+; kill_enemy                                            ;
+;                                                       ;
+; @DESCRIPTION                                          ;
+; Kill the specified enemy. Enemy X-cord passed in a2.  ;
+; Enemy Y-cord passed in a3. No return.                 ;
+;-------------------------------------------------------;
+kill_enemy
+	STMFD sp!, {lr}
+
+	LDMFD sp!, {lr}
 
 ;-------------------------------------------------------;
 ; @NAME                                                 ;
