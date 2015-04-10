@@ -31,6 +31,8 @@ MOVE_RIGHT 		 EQU 2
 MOVE_DOWN 		 EQU 3
 MOVE_LEFT 		 EQU 4
 	
+NUM_BRICKS       EQU 10
+	
 BOMBERMAN_X_START EQU 1              ; Bomberman starting x-position.
 BOMBERMAN_Y_START EQU 1              ; Bomberman starting y-position.
 	
@@ -181,7 +183,7 @@ update_game
 	LDR a1, [a1]
 	BL move_bomberman            ; Move bomberman.
 	
-	BL move_enemies				 ; Move all enemies
+	;BL move_enemies				 ; Move all enemies
 
 	LDR a1, =keystroke
 	LDR a1, [a1]
@@ -765,6 +767,14 @@ clear_bomb_detonation_south_loop
 	LDR a1, =bomb_y_pos
 	MOV a2, #-100
 	STR a2, [a1]
+	
+	LDR a1, =bomb_detonated
+	MOV a2, #0
+	STR a2, [a1]					; De-assert bomb_detonated flag.
+	
+	LDR a1, =bomb_placed            ; De-assert bomb_placed flag.
+	MOV a2, #0
+	STR a2, [a1]
 
 clear_bomb_detonation_exit
 	LDMFD sp!, {lr, v1-v8}
@@ -866,6 +876,9 @@ valid_move
 	;MOV a1, #0
 	;STR a1, [v5]
 	
+	MOV v5, #-1
+	MOV v6, #-2
+	
 	LDR a1, =bomberman_x_pos	   ; Update new bomberman X-position.
 	STR v3, [a1]
 	LDR a2, =bomberman_y_pos       ; Update new bomerman Y-position.
@@ -876,11 +889,13 @@ valid_move
 	MOV a3, #BOMBERMAN             ; Move bomerman to new position.
 	BL update_pos
 	
-	MOV a1, v1                     ; Remove bomberman from old position only if a bomb has not 
-	MOV a2, v2                     ; been placed at old position.
+	MOV a1, v1                     ; Skip moving bomberman from old position only if a bomb has 
+	MOV a2, v2                     ; occupied old position AND is currently placed.
 	MOV a3, #FREE
 	MOV v5, #100                   ; Initialize to two non equal values. Needed to compare two
 	MOV v6, #101                   ; X-Y coordinate pairs properly.
+	MOV v7, #102
+	MOV v8, #103
 	
 	LDR v3, =bomb_x_pos
 	LDR v3, [v3]
@@ -892,9 +907,18 @@ valid_move
 	CMP v4, v2                    ; Compare old y-position to bomb's y-position.
 	MOVEQ v6, #1
 	
-	CMP v5, v6                    ; If v5 and v6 are asserted, then the bomb position                    
-	BLNE update_pos               ; and old position are the same. Do not remove bomberman
-	                              ; from old position in this case.
+	CMP v5, v6
+	MOVEQ v7, #1                  ; Is a bomb placed at the old position?
+	
+	LDR v8, =bomb_placed
+	LDR v8, [v8]
+	CMP v8, #1
+	MOVEQ v8, #1                  ; Is the bomb currently placed (not detonated)?
+	
+	CMP v7, v8					  ; Does a bomb occupy the old position? Is is currently placed?
+	BEQ not_valid_move
+	
+	BL update_pos                 ; Otherwise, remove bomberman from old position.
 	
 	LDMFD sp!, {lr, v1-v6}
 	BX lr
@@ -1148,7 +1172,7 @@ generate_brick_walls
 	LDR v1, =level          ; Load current level into v1.
 	LDR v1, [v1]
 	
-	MOV v3, #20             ; Number of bricks to generate. Might need
+	MOV v3, #NUM_BRICKS     ; Number of bricks to generate. Might need
 	MUL v4, v1, v3          ; to be tweaked. 
                             ; v2 = number of bricks = level * 10.
 	
