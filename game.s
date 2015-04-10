@@ -43,7 +43,7 @@ ENEMY2_Y_START	EQU 11               ; Enemy 2 starting y-position.
 ENEMY3_X_START	EQU 23				 ; Enemy 3 (FAST) starting x-position.
 ENEMY3_Y_START	EQU 11               ; Enemy 3 (FAST) starting y-position.
 	
-BOMB_TIMEOUT    EQU 5                ; After many refreshes the bomb should detonate.
+BOMB_TIMEOUT    EQU 10               ; After many refreshes the bomb should detonate.
 BLAST_X_RADIUS  EQU 4                ; Horizontal blast radius.
 BLAST_Y_RADIUS  EQU 2                ; Vertical blast radius.
 	
@@ -221,6 +221,11 @@ update_game
 ;-------------------------------------------------------;
 detonate_bomb
 	STMFD sp!, {lr, v1-v8}
+	
+	LDR a1, =bomb_placed
+	LDR a1, [a1]
+	CMP a1, #0
+	BEQ detonate_bomb_exit       ; Is a bomb placed? If not, exit.
 	
 	LDR a1, =bomb_detonated
 	MOV a2, #1
@@ -480,10 +485,112 @@ kill_enemy
 clear_bomb_detonation
 	STMFD sp!, {lr}
 	
-	STR a2, [a1]                ; De-assert bomb detonated flag.
-  
-    ; Insert code which removes '-' and '|' characters here.  
+	LDR a1, =bomb_detonated
+	LDR a2, [a1]
+	CMP a2, #0
+	BEQ clear_bomb_detonation_exit  ; Has the bomb detonated? If not, exit.
 	
+	MOV a2, #0
+	STR a2, [a1]                    ; De-assert bomb detonated flag.
+  
+	LDR a1, =bomb_x_pos
+	LDR a1, [a1]
+	MOV v1, a1
+	LDR a2, =bomb_y_pos
+	LDR a2, [a2]
+	MOV v2, a2
+	
+	SUB v3, v1, #BLAST_X_RADIUS  ; Lower bound x-position for blast.
+	CMP v3, #0
+	MOVLT v3, #0
+	ADD v4, v1, #BLAST_X_RADIUS  ; Upper bound x-position for blast.
+	CMP v4, #0
+	MOVLT v4, #0
+	
+	SUB v5, v2, #BLAST_Y_RADIUS  ; Lower bound y-position for blast.
+	CMP v5, #0
+	MOVLT v5, #0
+	ADD v6, v2, #BLAST_Y_RADIUS  ; Upper bound y-position for blast.
+	CMP v6, #0
+	MOVLT v6, #0
+	
+clear_bomb_detonation_west
+	MOV v7, v1
+	
+clear_bomb_detonation_west_loop
+	MOV a1, v7
+	MOV a2, v2
+	BL check_pos_char
+	CMP a1, #BARRIER
+	BEQ clear_bomb_detonation_east
+	
+	MOV a1, v7
+	MOV a2, v2
+	MOV a3, #FREE
+	BL update_pos
+	
+	ADD v7, v7, #1
+	CMP v7, v4
+	BLE clear_bomb_detonation_west_loop
+
+clear_bomb_detonation_east
+	MOV v7, v1
+	
+clear_bomb_detonation_east_loop
+	MOV a1, v7
+	MOV a2, v2
+	BL check_pos_char
+	CMP a1, #BARRIER
+	BEQ clear_bomb_detonation_north
+	
+	MOV a1, v7
+	MOV a2, v2
+	MOV a3, #FREE
+	BL update_pos
+	
+	SUB v7, v7, #1
+	CMP v7, v3
+	BGE clear_bomb_detonation_east_loop
+	
+clear_bomb_detonation_north
+	MOV v7, v2
+	
+clear_bomb_detonation_north_loop
+	MOV a1, v1
+	MOV a2, v7
+	BL check_pos_char
+	CMP a1, #BARRIER
+	BEQ clear_bomb_detonation_south
+	
+	MOV a1, v1
+	MOV a2, v7
+	MOV a3, #FREE
+	BL update_pos
+	
+	SUB v7, v7, #1
+	CMP v7, v5
+	BGE clear_bomb_detonation_north_loop
+	
+clear_bomb_detonation_south
+	MOV v7, v2
+	
+clear_bomb_detonation_south_loop
+	MOV a1, v1
+	MOV a2, v7
+	BL check_pos_char
+	CMP a1, #BARRIER
+	BEQ clear_bomb_detonation_south
+	
+	MOV a1, v1
+	MOV a2, v7
+	MOV a3, #FREE
+	BL update_pos
+	
+	ADD v7, v7, #1
+	CMP v7, v6
+	BLE clear_bomb_detonation_south_loop
+
+clear_bomb_detonation_exit
 	LDMFD sp!, {lr}
 	BX lr
 	
