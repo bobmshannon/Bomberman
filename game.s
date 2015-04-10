@@ -276,14 +276,13 @@ detonate_bomb_west_loop
 	MOV a2, v2                   ; Y-position (fixed).
 	BL check_pos_char
 	CMP a1, #ENEMY_SLOW          ; Is it a slow enemy? If so, call kill_enemy.
-	
-	; Call kill_enemy
+	BLEQ kill_enemy
 	
 	MOV a1, v7                   ; Current X-position (decremented after each loop iteration).
 	MOV a2, v2                   ; Y-position (fixed).
 	BL check_pos_char
 	CMP a1, #ENEMY_FAST          ; Is it a fast enemy? If so, call kill_enemy.
-	; Call kill_enemy
+	BLEQ kill_enemy
 	
 	MOV a1, v7                   ; Current X-position (decremented after each loop iteration).
 	MOV a2, v2                   ; Y-position (fixed).
@@ -329,13 +328,13 @@ detonate_bomb_east_loop
 	MOV a2, v2                   ; Y-position (fixed).
 	BL check_pos_char
 	CMP a1, #ENEMY_SLOW          ; Is it a slow enemy? If so, call kill_enemy.
-	; Call kill_enemy
+	BLEQ kill_enemy
 	
 	MOV a1, v7                   ; Current X-position (incremented after each loop iteration).
 	MOV a2, v2                   ; Y-position (fixed).
 	BL check_pos_char
 	CMP a1, #ENEMY_FAST          ; Is it a fast enemy? If so, call kill_enemy.
-	; Call kill_enemy
+	BLEQ kill_enemy
 	
 	MOV a1, v7                   ; Current X-position (incremented after each loop iteration).
 	MOV a2, v2                   ; Y-position (fixed).
@@ -388,7 +387,7 @@ detonate_bomb_south_loop
 	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
 	BL check_pos_char
 	CMP a1, #ENEMY_FAST          ; Is it a fast enemy? If so, call kill_enemy.
-	; Call kill_enemy
+	BLEQ kill_enemy
 	
 	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
 	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
@@ -433,14 +432,13 @@ detonate_bomb_north_loop
 	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
 	BL check_pos_char
 	CMP a1, #ENEMY_SLOW          ; Is it a slow enemy? If so, call kill_enemy.
-	
-	; Call kill_enemy
+	BLEQ kill_enemy
 	
 	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
 	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
 	BL check_pos_char
 	CMP a1, #ENEMY_FAST          ; Is it a fast enemy? If so, call kill_enemy.
-	; Call kill_enemy
+	BLEQ kill_enemy
 	
 	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
 	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
@@ -458,6 +456,13 @@ detonate_bomb_north_next
 	CMP v7, v5
 	BGE detonate_bomb_north_loop
 
+	LDR a1, =bomb_x_pos
+	LDR a1, [a1]
+	LDR a2, =bomb_y_pos
+	LDR a2, [a2]
+	MOV a3, #BOMB
+	BL update_pos
+	
 detonate_bomb_exit
 	LDMFD sp!, {lr, v1-v8}
 	BX lr
@@ -471,9 +476,117 @@ detonate_bomb_exit
 ; Enemy Y-cord passed in a3. No return.                 ;
 ;-------------------------------------------------------;
 kill_enemy
-	STMFD sp!, {lr}
+	STMFD sp!, {lr, v1-v8}
+	
+	LDR a1, =bomb_x_pos
+	LDR a1, [a1]
+	LDR a2, =bomb_y_pos
+	LDR a2, [a2]
+	MOV a1, v1
+	MOV a2, v1
+	
+	SUB v3, v1, #BLAST_X_RADIUS  ; Lower bound x-position for blast.
+	ADD v4, v1, #BLAST_X_RADIUS  ; Upper bound x-position for blast.
+	
+	SUB v5, v2, #BLAST_Y_RADIUS  ; Lower bound y-position for blast.
+	ADD v6, v2, #BLAST_Y_RADIUS  ; Upper bound y-position for blast.
 
-	LDMFD sp!, {lr}
+kill_enemy1
+	LDR a1, =enemy1_x_pos
+	LDR a1, [a1]
+	LDR a2, =enemy1_y_pos
+	LDR a2, [a2]
+	MOV v1, #-1
+	MOV v2, #-2
+	MOV v7, #-3
+	MOV v8, #-4
+	
+	CMP a1, v3                   ; Check if enemy is within x-range of blast.
+	MOVGE v1, #1
+	CMP a1, v4
+	MOVLE v2, #1
+	CMP v1, v2
+	MOVEQ v7, #1
+	
+	CMP a2, v5                   ; Check if enemy is within y-range of blast.
+	MOVGE v1, #1
+	CMP a2, v6
+	MOVLE v2, #1
+	CMP v1, v2
+	MOVEQ v8, #1
+	
+	CMP v7, v8                   ; If enemy is within x-range and y-range, we have a hit.
+	BNE kill_enemy2
+	
+	LDR a1, =enemy1_killed
+	MOV a2, #1
+	STR a2, [a1]
+
+kill_enemy2
+	LDR a1, =enemy2_x_pos
+	LDR a1, [a1]
+	LDR a2, =enemy2_y_pos
+	LDR a2, [a2]
+	MOV v1, #-1
+	MOV v2, #-2
+	MOV v7, #-3
+	MOV v8, #-4
+	
+	CMP a1, v3                   ; Check if enemy is within x-range of blast.
+	MOVGE v1, #1
+	CMP a1, v4
+	MOVLE v2, #1
+	CMP v1, v2
+	MOVEQ v7, #1
+	
+	CMP a2, v5                   ; Check if enemy is within y-range of blast.
+	MOVGE v1, #1
+	CMP a2, v6
+	MOVLE v2, #1
+	CMP v1, v2
+	MOVEQ v8, #1
+	
+	CMP v7, v8                   ; If enemy is within x-range and y-range, we have a hit.
+	BNE kill_enemy3
+	
+	LDR a1, =enemy2_killed
+	MOV a2, #1
+	STR a2, [a1]	
+
+kill_enemy3
+	LDR a1, =enemy3_x_pos
+	LDR a1, [a1]
+	LDR a2, =enemy3_y_pos
+	LDR a2, [a2]
+	MOV v1, #-1
+	MOV v2, #-2
+	MOV v7, #-3
+	MOV v8, #-4
+	
+	CMP a1, v3                   ; Check if enemy is within x-range of blast.
+	MOVGE v1, #1
+	CMP a1, v4
+	MOVLE v2, #1
+	CMP v1, v2
+	MOVEQ v7, #1
+	
+	CMP a2, v5                   ; Check if enemy is within y-range of blast.
+	MOVGE v1, #1
+	CMP a2, v6
+	MOVLE v2, #1
+	CMP v1, v2
+	MOVEQ v8, #1
+	
+	CMP v7, v8                   ; If enemy is within x-range and y-range, we have a hit.
+	BNE kill_enemy_exit
+	
+	LDR a1, =enemy3_killed
+	MOV a2, #1
+	STR a2, [a1]
+	
+kill_enemy_exit
+	LDMFD sp!, {lr, v1-v8}
+	BX lr
 
 ;-------------------------------------------------------;
 ; @NAME                                                 ;
@@ -579,7 +692,7 @@ clear_bomb_detonation_south_loop
 	MOV a2, v7
 	BL check_pos_char
 	CMP a1, #BARRIER
-	BEQ clear_bomb_detonation_south
+	BEQ clear_bomb_detonation_exit
 	
 	MOV a1, v1
 	MOV a2, v7
@@ -907,10 +1020,11 @@ check_enemy_moves
 	;Check up
 	SUB a2, v2, #1		;Check y-1
 	BL check_pos_char
-	CMP a1, #' '		;Is it a space?  Valid move if so
+	CMP a1, #FREE		;Is it a space?  Valid move if so
 	ORREQ v3, v3, #0x01
-	CMP a1, #'B'		;Is it bomberman?  Valid move if so
+	CMP a1, #BOMBERMAN	;Is it bomberman?  Valid move if so
 	ORREQ v3, v3, #0x01
+	
 
 	;Check right
 	ADD a1, v1, #1		;Check x+1
@@ -1061,7 +1175,7 @@ check_pos
 	ADD v1, v1, v3                    ; Add offset to base address of board string.
 	
 	LDRB v1, [v1]                     ; Finally, load the character and check if it is 
-	CMP v1, #32                       ; a space character (ascii code 32). A space 
+	CMP v1, #FREE                     ; a space character (ascii code 32). A space 
 	BNE check_pos_assert_false        ; character indicates the position is free.
 	
 check_pos_assert_true
