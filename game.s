@@ -322,7 +322,7 @@ detonate_bomb_east_loop
 	MOV a2, v2                   ; Y-position (fixed).
 	BL check_pos_char
 	CMP a1, #BARRIER             ; Is it a barrier? If so, break out of loop.
-	BEQ detonate_bomb_north
+	BEQ detonate_bomb_south
 	
 	MOV a1, v7                   ; Current X-position (incremented after each loop iteration).
 	MOV a2, v2                   ; Y-position (fixed).
@@ -522,12 +522,18 @@ kill_enemy1
 	MOV a2, #1
 	STR a2, [a1]
 	
+	LDR a1, =enemy3_x_pos
+	LDR a2, =enemy3_y_pos
+	MOV a3, #-100
+	STR a3, [a1]
+	STR a2, [a1]                 ; Move enemy off board.
+	
 	LDR a1, =num_enemies         ; Decrement enemy count.
 	LDR a2, [a1]
 	SUB a2, a2, #1
 	CMP a2, #0                   ; Is there no enemies left? If so, go to the next level.
-	;BLEQ level_up
-	LDR a2, [a1]
+	BLEQ level_up
+	STR a2, [a1]
 
 kill_enemy2
 	LDR a1, =enemy2_x_pos
@@ -559,13 +565,19 @@ kill_enemy2
 	LDR a1, =enemy2_killed       ; Kill enemy #2.
 	MOV a2, #1
 	STR a2, [a1]	
+	
+	LDR a1, =enemy3_x_pos
+	LDR a2, =enemy3_y_pos
+	MOV a3, #-100
+	STR a3, [a1]
+	STR a2, [a1]                 ; Move enemy off board.
 
 	LDR a1, =num_enemies         ; Decrement enemy count.
 	LDR a2, [a1]
 	SUB a2, a2, #1
 	CMP a2, #0                   ; Is there no enemies left? If so, go to the next level.
-	;BLEQ level_up
-	LDR a2, [a1]
+	BLEQ level_up
+	STR a2, [a1]
 
 kill_enemy3
 	LDR a1, =enemy3_x_pos
@@ -598,16 +610,38 @@ kill_enemy3
 	MOV a2, #1
 	STR a2, [a1]
 	
+	LDR a1, =enemy3_x_pos
+	LDR a2, =enemy3_y_pos
+	MOV a3, #-100
+	STR a3, [a1]
+	STR a2, [a1]                 ; Move enemy off board.
+	
 	LDR a1, =num_enemies         ; Decrement enemy count.
 	LDR a2, [a1]
 	SUB a2, a2, #1
 	CMP a2, #0                   ; Is there no enemies left? If so, go to the next level.
-	;BLEQ level_up
-	LDR a2, [a1]
+	BLEQ level_up
+	STR a2, [a1]
 	
 kill_enemy_exit
 	LDMFD sp!, {lr, v1-v8}
 	BX lr
+
+;-------------------------------------------------------;
+; @NAME                                                 ;
+; level_up                                              ;
+;                                                       ;
+; @DESCRIPTION                                          ;
+; Re-initialize board and increase game diffulculty by  ; 
+; increasing speed                                      ;
+;-------------------------------------------------------;
+level_up
+	STMFD sp!, {lr}
+	
+	BL clear_bomb_detonation
+	BL initialize_game
+	
+	LDMFD sp!, {lr}
 
 ;-------------------------------------------------------;
 ; @NAME                                                 ;
