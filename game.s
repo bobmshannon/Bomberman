@@ -71,7 +71,7 @@ enemy3_killed	DCD 0x00000000
 
 enemy_slow_moved DCD 0x00000000		 ; Did the slow enemies move last frame?
 
-num_enemies		DCD 0x00000000
+num_enemies		DCD 0x00000003
 
 num_lives		DCD 0x00000000
 
@@ -518,9 +518,16 @@ kill_enemy1
 	CMP v7, v8                   ; If enemy is within x-range and y-range, we have a hit.
 	BNE kill_enemy2
 	
-	LDR a1, =enemy1_killed
+	LDR a1, =enemy1_killed		; Kill enemy #1
 	MOV a2, #1
 	STR a2, [a1]
+	
+	LDR a1, =num_enemies         ; Decrement enemy count.
+	LDR a2, [a1]
+	SUB a2, a2, #1
+	CMP a2, #0                   ; Is there no enemies left? If so, go to the next level.
+	;BLEQ level_up
+	LDR a2, [a1]
 
 kill_enemy2
 	LDR a1, =enemy2_x_pos
@@ -549,9 +556,16 @@ kill_enemy2
 	CMP v7, v8                   ; If enemy is within x-range and y-range, we have a hit.
 	BNE kill_enemy3
 	
-	LDR a1, =enemy2_killed
+	LDR a1, =enemy2_killed       ; Kill enemy #2.
 	MOV a2, #1
 	STR a2, [a1]	
+
+	LDR a1, =num_enemies         ; Decrement enemy count.
+	LDR a2, [a1]
+	SUB a2, a2, #1
+	CMP a2, #0                   ; Is there no enemies left? If so, go to the next level.
+	;BLEQ level_up
+	LDR a2, [a1]
 
 kill_enemy3
 	LDR a1, =enemy3_x_pos
@@ -580,9 +594,16 @@ kill_enemy3
 	CMP v7, v8                   ; If enemy is within x-range and y-range, we have a hit.
 	BNE kill_enemy_exit
 	
-	LDR a1, =enemy3_killed
+	LDR a1, =enemy3_killed		 ; Kill enemy #3.
 	MOV a2, #1
 	STR a2, [a1]
+	
+	LDR a1, =num_enemies         ; Decrement enemy count.
+	LDR a2, [a1]
+	SUB a2, a2, #1
+	CMP a2, #0                   ; Is there no enemies left? If so, go to the next level.
+	;BLEQ level_up
+	LDR a2, [a1]
 	
 kill_enemy_exit
 	LDMFD sp!, {lr, v1-v8}
