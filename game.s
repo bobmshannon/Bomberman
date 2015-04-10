@@ -522,8 +522,8 @@ kill_enemy1
 	MOV a2, #1
 	STR a2, [a1]
 	
-	LDR a1, =enemy3_x_pos
-	LDR a2, =enemy3_y_pos
+	LDR a1, =enemy1_x_pos
+	LDR a2, =enemy1_y_pos
 	MOV a3, #-100
 	STR a3, [a1]
 	STR a2, [a1]                 ; Move enemy off board.
@@ -566,8 +566,8 @@ kill_enemy2
 	MOV a2, #1
 	STR a2, [a1]	
 	
-	LDR a1, =enemy3_x_pos
-	LDR a2, =enemy3_y_pos
+	LDR a1, =enemy2_x_pos
+	LDR a2, =enemy2_y_pos
 	MOV a3, #-100
 	STR a3, [a1]
 	STR a2, [a1]                 ; Move enemy off board.
@@ -651,7 +651,7 @@ level_up
 ; Detonate the placed bomb.                             ;
 ;-------------------------------------------------------;
 clear_bomb_detonation
-	STMFD sp!, {lr}
+	STMFD sp!, {lr, v1-v8}
 	
 	LDR a1, =bomb_detonated
 	LDR a2, [a1]
@@ -767,7 +767,7 @@ clear_bomb_detonation_south_loop
 	STR a2, [a1]
 
 clear_bomb_detonation_exit
-	LDMFD sp!, {lr}
+	LDMFD sp!, {lr, v1-v8}
 	BX lr
 	
 ;-------------------------------------------------------;
