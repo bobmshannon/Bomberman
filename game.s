@@ -702,6 +702,14 @@ clear_bomb_detonation_south_loop
 	ADD v7, v7, #1
 	CMP v7, v6
 	BLE clear_bomb_detonation_south_loop
+	
+	LDR a1, =bomb_x_pos
+	MOV a2, #-100
+	STR a2, [a1]
+	
+	LDR a1, =bomb_y_pos
+	MOV a2, #-100
+	STR a2, [a1]
 
 clear_bomb_detonation_exit
 	LDMFD sp!, {lr}
