@@ -2,7 +2,8 @@
 
 	EXPORT lab7
 	EXPORT FIQ_Handler
-
+	EXPORT game_loop
+		
 	EXTERN draw
 	EXTERN draw_changes
 	EXTERN initialize_game

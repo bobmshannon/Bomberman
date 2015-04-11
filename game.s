@@ -11,6 +11,8 @@
 	EXPORT initialize_game
 	EXPORT update_game
 	
+	EXTERN game_loop
+	
 BRICK_WALL       EQU '#'
 BOMBERMAN        EQU 'B'
 ENEMY_SLOW 		 EQU 'x'
@@ -59,16 +61,16 @@ bomb_y_pos		DCD 0x00000000       ; Placed bomb y-position.
 bomberman_x_pos	DCD 0x00000001       ; Bomberman's current x-position.
 bomberman_y_pos DCD 0x00000001       ; Bomberman's current y-position.
 
-enemy1_x_pos	DCD 0x00000000
-enemy1_y_pos	DCD 0x00000000
+enemy1_x_pos	DCD 0x00000017
+enemy1_y_pos	DCD 0x00000001
 enemy1_killed	DCD 0x00000000
 
-enemy2_x_pos	DCD 0x00000000
-enemy2_y_pos	DCD 0x00000000
+enemy2_x_pos	DCD 0x00000001
+enemy2_y_pos	DCD 0x0000000B
 enemy2_killed	DCD 0x00000000
 
-enemy3_x_pos	DCD 0x00000000
-enemy3_y_pos	DCD 0x00000000
+enemy3_x_pos	DCD 0x00000017
+enemy3_y_pos	DCD 0x0000000B
 enemy3_killed	DCD 0x00000000
 
 enemy_slow_moved DCD 0x00000000		 ; Did the slow enemies move last frame?
@@ -494,6 +496,11 @@ kill_enemy
 	ADD v6, v2, #BLAST_Y_RADIUS  ; Upper bound y-position for blast.
 
 kill_enemy1
+	LDR a1, =enemy1_killed
+	LDR a1, [a1]
+	CMP a1, #1
+	BEQ kill_enemy2				; Is enemy already dead? If so, skip check.
+	
 	LDR a1, =enemy1_x_pos
 	LDR a1, [a1]
 	LDR a2, =enemy1_y_pos
@@ -509,6 +516,9 @@ kill_enemy1
 	MOVLE v2, #1
 	CMP v1, v2
 	MOVEQ v7, #1
+	
+	MOV v1, #-1
+	MOV v2, #-2
 	
 	CMP a2, v5                   ; Check if enemy is within y-range of blast.
 	MOVGE v1, #1
@@ -528,16 +538,21 @@ kill_enemy1
 	LDR a2, =enemy1_y_pos
 	MOV a3, #-100
 	STR a3, [a1]
-	STR a2, [a1]                 ; Move enemy off board.
+	STR a3, [a2]                 ; Move enemy off board.
 	
 	LDR a1, =num_enemies         ; Decrement enemy count.
 	LDR a2, [a1]
 	SUB a2, a2, #1
 	CMP a2, #0                   ; Is there no enemies left? If so, go to the next level.
-	BLEQ level_up
+	BEQ kill_enemy_exit_level_up
 	STR a2, [a1]
 
 kill_enemy2
+	LDR a1, =enemy2_killed
+	LDR a1, [a1]
+	CMP a1, #1
+	BEQ kill_enemy3				; Is enemy already dead? If so, skip check.
+	
 	LDR a1, =enemy2_x_pos
 	LDR a1, [a1]
 	LDR a2, =enemy2_y_pos
@@ -553,6 +568,9 @@ kill_enemy2
 	MOVLE v2, #1
 	CMP v1, v2
 	MOVEQ v7, #1
+	
+	MOV v1, #-1
+	MOV v2, #-2
 	
 	CMP a2, v5                   ; Check if enemy is within y-range of blast.
 	MOVGE v1, #1
@@ -572,16 +590,21 @@ kill_enemy2
 	LDR a2, =enemy2_y_pos
 	MOV a3, #-100
 	STR a3, [a1]
-	STR a2, [a1]                 ; Move enemy off board.
+	STR a3, [a2]                 ; Move enemy off board.
 
 	LDR a1, =num_enemies         ; Decrement enemy count.
 	LDR a2, [a1]
 	SUB a2, a2, #1
 	CMP a2, #0                   ; Is there no enemies left? If so, go to the next level.
-	BLEQ level_up
+	BEQ kill_enemy_exit_level_up
 	STR a2, [a1]
 
 kill_enemy3
+	LDR a1, =enemy3_killed
+	LDR a1, [a1]
+	CMP a1, #1
+	BEQ kill_enemy_exit				; Is enemy already dead? If so, skip check.
+	
 	LDR a1, =enemy3_x_pos
 	LDR a1, [a1]
 	LDR a2, =enemy3_y_pos
@@ -597,6 +620,9 @@ kill_enemy3
 	MOVLE v2, #1
 	CMP v1, v2
 	MOVEQ v7, #1
+	
+	MOV v1, #-1
+	MOV v2, #-2
 	
 	CMP a2, v5                   ; Check if enemy is within y-range of blast.
 	MOVGE v1, #1
@@ -616,18 +642,22 @@ kill_enemy3
 	LDR a2, =enemy3_y_pos
 	MOV a3, #-100
 	STR a3, [a1]
-	STR a2, [a1]                 ; Move enemy off board.
+	STR a3, [a2]                 ; Move enemy off board.
 	
 	LDR a1, =num_enemies         ; Decrement enemy count.
 	LDR a2, [a1]
 	SUB a2, a2, #1
 	CMP a2, #0                   ; Is there no enemies left? If so, go to the next level.
-	BLEQ level_up
+	BEQ kill_enemy_exit_level_up
 	STR a2, [a1]
 	
 kill_enemy_exit
 	LDMFD sp!, {lr, v1-v8}
 	BX lr
+	
+kill_enemy_exit_level_up
+	LDMFD sp!, {lr, v1-v8}
+	B level_up
 
 ;-------------------------------------------------------;
 ; @NAME                                                 ;
@@ -638,12 +668,20 @@ kill_enemy_exit
 ; increasing speed                                      ;
 ;-------------------------------------------------------;
 level_up
-	STMFD sp!, {lr}
-	
 	BL clear_bomb_detonation
-	BL initialize_game
 	
-	LDMFD sp!, {lr}
+	LDR a1, =bomberman_x_pos
+	LDR a1, [a1]
+	LDR a2, =bomberman_y_pos
+	LDR a2, [a2]
+	MOV a3, #FREE
+	BL update_pos
+	
+	; Insert code which tweaks game parameters here (to make the next level harder);
+	
+	BL initialize_game
+	B game_loop
+
 
 ;-------------------------------------------------------;
 ; @NAME                                                 ;
