@@ -505,7 +505,7 @@ kill_enemy1
 	LDR a1, [a1]
 	LDR a2, =enemy1_y_pos
 	LDR a2, [a2]
-	MOV v1, #-1
+	MOV v1, #-1					; Initialize variables for pairwise comparison.
 	MOV v2, #-2
 	MOV v7, #-3
 	MOV v8, #-4
@@ -517,7 +517,7 @@ kill_enemy1
 	CMP v1, v2
 	MOVEQ v7, #1
 	
-	MOV v1, #-1
+	MOV v1, #-1					 ; Re-initialize variables to non equal values for pairwise comparison.
 	MOV v2, #-2
 	
 	CMP a2, v5                   ; Check if enemy is within y-range of blast.
@@ -557,7 +557,7 @@ kill_enemy2
 	LDR a1, [a1]
 	LDR a2, =enemy2_y_pos
 	LDR a2, [a2]
-	MOV v1, #-1
+	MOV v1, #-1					; Initialize variables for pairwise comparison.
 	MOV v2, #-2
 	MOV v7, #-3
 	MOV v8, #-4
@@ -575,7 +575,7 @@ kill_enemy2
 	CMP a2, v5                   ; Check if enemy is within y-range of blast.
 	MOVGE v1, #1
 	CMP a2, v6
-	MOVLE v2, #1
+	MOVLE v2, #1				 ; Re-initialize variables to non equal values for pairwise comparison.
 	CMP v1, v2
 	MOVEQ v8, #1
 	
@@ -603,13 +603,13 @@ kill_enemy3
 	LDR a1, =enemy3_killed
 	LDR a1, [a1]
 	CMP a1, #1
-	BEQ kill_enemy_exit				; Is enemy already dead? If so, skip check.
+	BEQ kill_enemy_exit			 ; Is enemy already dead? If so, skip check.
 	
 	LDR a1, =enemy3_x_pos
 	LDR a1, [a1]
 	LDR a2, =enemy3_y_pos
 	LDR a2, [a2]
-	MOV v1, #-1
+	MOV v1, #-1					 ; Initialize variables for pairwise comparison.
 	MOV v2, #-2
 	MOV v7, #-3
 	MOV v8, #-4
@@ -621,7 +621,7 @@ kill_enemy3
 	CMP v1, v2
 	MOVEQ v7, #1
 	
-	MOV v1, #-1
+	MOV v1, #-1					 ; Re-initialize variables to non equal values for pairwise comparison.
 	MOV v2, #-2
 	
 	CMP a2, v5                   ; Check if enemy is within y-range of blast.
