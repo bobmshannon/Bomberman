@@ -85,7 +85,7 @@ enemy_slow_moved DCD 0x00000000		 ; Did the slow enemies move last frame?
 
 num_enemies		DCD 0x00000003
 
-num_lives		DCD 0x00000000
+num_lives		DCD 0x00000003
 
 level			DCD 0x00000001
 
@@ -193,7 +193,7 @@ update_game
 	LDR a1, [a1]
 	BL move_bomberman            ; Move bomberman.
 	
-	;BL move_enemies				 ; Move all enemies
+	BL move_enemies				 ; Move all enemies
 
 	LDR a1, =keystroke
 	LDR a1, [a1]
@@ -1063,6 +1063,21 @@ not_valid_move
 ;-------------------------------------------------------;
 return
 	LDMFD sp!, {lr}
+	BX lr
+
+;-------------------------------------------------------;
+; @NAME                                                 ;
+; kill_bomberman                                        ;
+;                                                       ;
+; @DESCRIPTION                                          ;
+; Checks if bomberman has any lives left. Causes a      ;
+; level reset or a game over as neccesary
+;-------------------------------------------------------;
+kill_bomberman
+	STMFD SP!, {lr}
+	
+	
+	LDMFD SP!, {lr}
 	BX lr
 
 ;-------------------------------------------------------;
