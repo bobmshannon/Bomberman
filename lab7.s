@@ -15,7 +15,7 @@
 	EXTERN output_string
 	EXTERN output_character
 	EXTERN print_integer
-	EXTERN set_output_xy
+	EXTERN set_cursor_pos
 
 U0BASE  EQU 0xE000C000	; UART0 Base Address	
 U0IER   EQU 0xE000C004	; UART0 Interrupt Enable Register
@@ -26,7 +26,8 @@ T0TC	EQU 0xE0004008	; Timer 0 Timer Count
 T0MCR	EQU 0xE0004014	; Timer 0 Match Control Register
 T0MR0	EQU 0xE0004018	; Timer 0 Match Register 0
 T0MR	EQU 0xE0004018	; Timer 0 Match Register 0
-	
+
+		
 refresh_timer_fired DCD 0x00000000
 		
 lab7	 	

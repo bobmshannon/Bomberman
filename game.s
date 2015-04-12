@@ -18,7 +18,8 @@ BRICK_WALL       EQU '#'
 BOMBERMAN        EQU 'B'
 ENEMY_SLOW 		 EQU 'x'
 ENEMY_FAST       EQU '+'
-BOMB             EQU 'o'
+BOMB             EQU 'ð'
+BOMB_EXPLODED    EQU 'o'
 BLAST_VERTICAL   EQU '|'
 BLAST_HORIZONTAL EQU '-'
 BARRIER          EQU 'Z'
@@ -33,6 +34,10 @@ MOVE_UP 		 EQU 1
 MOVE_RIGHT 		 EQU 2
 MOVE_DOWN 		 EQU 3
 MOVE_LEFT 		 EQU 4
+	
+ENEMY_MULTIPLIER     EQU 10			 ; Score multiplier when enemy is killed (score += level * multiplier)
+LEVEL_CLEARED_BONUS  EQU 100		 ; Score bonus when level is completed (score += 100)
+LIFE_REMAININING_BONUS EQU 25		 ; Score bonus awarded for each life remaining when game is over (score += num_lives * life_remaining_bonus)
 	
 MAX_LEVEL        EQU 8               ; Maximum level user can reach. After the player passes this level,
 								     ; the game no longer increases in speed.
@@ -433,7 +438,7 @@ detonate_bomb_north_loop
 	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
 	BL check_pos_char
 	CMP a1, #BARRIER             ; Is it a barrier? If so, break out of loop.
-	BEQ detonate_bomb_exit
+	BEQ detonate_bomb_north_exit
 	
 	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
 	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
@@ -462,12 +467,13 @@ detonate_bomb_north_next
 	SUB v7, v7, #1               ; Decrement Y-position.
 	CMP v7, v5
 	BGE detonate_bomb_north_loop
-
+	
+detonate_bomb_north_exit
 	LDR a1, =bomb_x_pos
 	LDR a1, [a1]
 	LDR a2, =bomb_y_pos
 	LDR a2, [a2]
-	MOV a3, #BOMB
+	MOV a3, #BOMB_EXPLODED
 	BL update_pos
 	
 detonate_bomb_exit
@@ -513,29 +519,38 @@ kill_enemy1
 	MOV v7, #-3
 	MOV v8, #-4
 	
-	CMP a1, v3                   ; Check if enemy is within x-range of blast.
+	CMP a1, v3                  ; Check if enemy is within x-range of blast.
 	MOVGE v1, #1
 	CMP a1, v4
 	MOVLE v2, #1
 	CMP v1, v2
 	MOVEQ v7, #1
 	
-	MOV v1, #-1					 ; Re-initialize variables to non equal values for pairwise comparison.
+	MOV v1, #-1					; Re-initialize variables to non equal values for pairwise comparison.
 	MOV v2, #-2
 	
-	CMP a2, v5                   ; Check if enemy is within y-range of blast.
+	CMP a2, v5                  ; Check if enemy is within y-range of blast.
 	MOVGE v1, #1
 	CMP a2, v6
 	MOVLE v2, #1
 	CMP v1, v2
 	MOVEQ v8, #1
 	
-	CMP v7, v8                   ; If enemy is within x-range and y-range, we have a hit.
+	CMP v7, v8                  ; If enemy is within x-range and y-range, we have a hit.
 	BNE kill_enemy2
 	
 	LDR a1, =enemy1_killed		; Kill enemy #1
 	MOV a2, #1
 	STR a2, [a1]
+	
+	LDR a1, =level
+	LDR a1, [a1]
+	LDR a2, =score
+	LDR a3, [a2]
+	MOV v1, #ENEMY_MULTIPLIER
+	MUL a4, a1, v1
+	ADD a3, a3, a4				 ; Update total score.
+	STR a3, [a2]				 ; score += (level_number * 10)
 	
 	LDR a1, =enemy1_x_pos
 	LDR a2, =enemy1_y_pos
@@ -589,6 +604,15 @@ kill_enemy2
 	MOV a2, #1
 	STR a2, [a1]	
 	
+	LDR a1, =level
+	LDR a1, [a1]
+	LDR a2, =score
+	LDR a3, [a2]
+	MOV v1, #ENEMY_MULTIPLIER
+	MUL a4, a1, v1
+	ADD a3, a3, a4				 ; Update total score.
+	STR a3, [a2]				 ; score += (level_number * 10)
+	
 	LDR a1, =enemy2_x_pos
 	LDR a2, =enemy2_y_pos
 	MOV a3, #-100
@@ -640,6 +664,16 @@ kill_enemy3
 	LDR a1, =enemy3_killed		 ; Kill enemy #3.
 	MOV a2, #1
 	STR a2, [a1]
+	
+	LDR a1, =level
+	LDR a1, [a1]
+	LDR a2, =score
+	LDR a3, [a2]
+	MOV v1, #ENEMY_MULTIPLIER
+	MUL a4, a1, v1
+	ADD a3, a3, a4				 ; Update total score.
+	STR a3, [a2]				 ; score += (level_number * 10)
+	
 	
 	LDR a1, =enemy3_x_pos
 	LDR a2, =enemy3_y_pos
@@ -695,6 +729,11 @@ increase_speed
 	
 
 begin_next_level
+	LDR a1, =score
+	LDR a2, [a1]
+	ADD a2, a2, #LEVEL_CLEARED_BONUS	 ; Update total score.
+	STR a2, [a1]						 ; score += LEVEL_CLEARED_BONUS
+	
 	BL initialize_game
 	B game_loop
 
