@@ -12,11 +12,12 @@
 	EXPORT update_game
 	
 	EXTERN game_loop
+	EXTERN T0MR0
 	
 BRICK_WALL       EQU '#'
 BOMBERMAN        EQU 'B'
 ENEMY_SLOW 		 EQU 'x'
-ENEMY_FAST       EQU '*'
+ENEMY_FAST       EQU '+'
 BOMB             EQU 'o'
 BLAST_VERTICAL   EQU '|'
 BLAST_HORIZONTAL EQU '-'
@@ -33,6 +34,8 @@ MOVE_RIGHT 		 EQU 2
 MOVE_DOWN 		 EQU 3
 MOVE_LEFT 		 EQU 4
 	
+MAX_LEVEL        EQU 8               ; Maximum level user can reach. After the player passes this level,
+								     ; the game no longer increases in speed.
 NUM_BRICKS       EQU 10
 	
 BOMBERMAN_X_START EQU 1              ; Bomberman starting x-position.
@@ -677,8 +680,21 @@ level_up
 	MOV a3, #FREE
 	BL update_pos
 	
-	; Insert code which tweaks game parameters here (to make the next level harder);
+	LDR a1, =level
+	LDR a2, [a1]
+	ADD a2, a2, #1
+	STR a2, [a1]
+	CMP a2, #MAX_LEVEL
+	BGT begin_next_level
 	
+increase_speed
+	LDR a1, =T0MR0
+	LDR a2, [a1]
+	LSR a2, a2, #1			
+	STR a2, [a1]				; Double the speed of the game.	
+	
+
+begin_next_level
 	BL initialize_game
 	B game_loop
 
