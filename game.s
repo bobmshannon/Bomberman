@@ -259,6 +259,8 @@ detonate_bomb
 	
 	SUB v5, v2, #BLAST_Y_RADIUS  ; Lower bound y-position for blast.
 	ADD v6, v2, #BLAST_Y_RADIUS  ; Upper bound y-position for blast.
+	
+	MOV v8, #0					 ; Keep track of number of bricks destroyed.
 
 ;-------------------------------------------------------;
 ; Destroy everything to the left of the placed bomb.    ;
@@ -283,6 +285,12 @@ detonate_bomb_west_loop
 	BL check_pos_char
 	CMP a1, #BARRIER             ; Is it a barrier? If so, break out of loop.
 	BEQ detonate_bomb_east
+	
+	MOV a1, v7                   ; Current X-position (decremented after each loop iteration).
+	MOV a2, v2                   ; Y-position (fixed).
+	BL check_pos_char
+	CMP a1, #BRICK_WALL          ; Is it a brick wall? If so, increment brick wall destroyed counter.
+	ADDEQ v8, v8, #1
 	
 	MOV a1, v7                   ; Current X-position (decremented after each loop iteration).
 	MOV a2, v2                   ; Y-position (fixed).
@@ -336,6 +344,12 @@ detonate_bomb_east_loop
 	CMP a1, #BARRIER             ; Is it a barrier? If so, break out of loop.
 	BEQ detonate_bomb_south
 	
+	MOV a1, v7                   ; Current X-position (decremented after each loop iteration).
+	MOV a2, v2                   ; Y-position (fixed).
+	BL check_pos_char
+	CMP a1, #BRICK_WALL          ; Is it a brick wall? If so, increment brick wall destroyed counter.
+	ADDEQ v8, v8, #1
+	
 	MOV a1, v7                   ; Current X-position (incremented after each loop iteration).
 	MOV a2, v2                   ; Y-position (fixed).
 	BL check_pos_char
@@ -381,11 +395,17 @@ detonate_bomb_south_loop
 	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call game_over.
 	; Call game_over
 	
-	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
+	MOV a1, v1                   ; Current X-position (fixed).
 	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
 	BL check_pos_char
 	CMP a1, #BARRIER             ; Is it a barrier? If so, break out of loop.
 	BEQ detonate_bomb_north
+	
+	MOV a1, v1                   ; Current X-position (fixed).
+	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
+	BL check_pos_char
+	CMP a1, #BRICK_WALL          ; Is it a brick wall? If so, increment brick wall destroyed counter.
+	ADDEQ v8, v8, #1
 	
 	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
 	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
@@ -440,6 +460,12 @@ detonate_bomb_north_loop
 	CMP a1, #BARRIER             ; Is it a barrier? If so, break out of loop.
 	BEQ detonate_bomb_north_exit
 	
+	MOV a1, v1                   ; Current X-position (fixed).
+	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
+	BL check_pos_char
+	CMP a1, #BRICK_WALL          ; Is it a brick wall? If so, increment brick wall destroyed counter.
+	ADDEQ v8, v8, #1
+	
 	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
 	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
 	BL check_pos_char
@@ -475,6 +501,14 @@ detonate_bomb_north_exit
 	LDR a2, [a2]
 	MOV a3, #BOMB_EXPLODED
 	BL update_pos
+	
+	LDR a1, =score				; Update score.
+	LDR a2, [a1]                ; score += Number of bricks destroyed * current level.
+	LDR a3, =level
+	LDR a3, [a3]
+	MUL a4, v8, a3
+	ADD a2, a2, a4
+	STR a2, [a1]
 	
 detonate_bomb_exit
 	LDMFD sp!, {lr, v1-v8}

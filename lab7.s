@@ -26,8 +26,7 @@ T0TC	EQU 0xE0004008	; Timer 0 Timer Count
 T0MCR	EQU 0xE0004014	; Timer 0 Match Control Register
 T0MR0	EQU 0xE0004018	; Timer 0 Match Register 0
 T0MR	EQU 0xE0004018	; Timer 0 Match Register 0
-
-		
+	
 refresh_timer_fired DCD 0x00000000
 		
 lab7	 	
@@ -45,6 +44,7 @@ lab7
 	LDR a1, =T0TCR
 	MOV a2, #1
 	STR a2, [a1]
+
 	
 game_loop	
 	LDR a1, =refresh_timer_fired
