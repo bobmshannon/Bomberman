@@ -37,9 +37,9 @@ refresh_timer_fired DCD 0x00000000
 		
 intro_message = "Update this message!\n\rPress <SPACE> to begin game",0
 hide_cursor = "\x1B[?25l", 0
-game_title = "Bomberman"
-game_over_message = "Game Over!"
-paused_message = "PAUSED"
+game_title = "Bomberman", 0
+game_over_message = "Game Over!", 0
+paused_message = "PAUSED", 0
 
 	ALIGN
 		
