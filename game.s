@@ -41,7 +41,6 @@ LIFE_REMAININING_BONUS EQU 25		 ; Score bonus awarded for each life remaining wh
 	
 MAX_LEVEL        EQU 8               ; Maximum level user can reach. After the player passes this level,
 								     ; the game no longer increases in speed.
-NUM_BRICKS       EQU 10
 	
 BOMBERMAN_X_START EQU 1              ; Bomberman starting x-position.
 BOMBERMAN_Y_START EQU 1              ; Bomberman starting y-position.
@@ -58,6 +57,9 @@ ENEMY3_Y_START	EQU 11               ; Enemy 3 (FAST) starting y-position.
 BOMB_TIMEOUT    EQU 10               ; After many refreshes the bomb should detonate.
 BLAST_X_RADIUS  EQU 4                ; Horizontal blast radius.
 BLAST_Y_RADIUS  EQU 2                ; Vertical blast radius.
+	
+num_bricks      DCD 0x0000000A
+BRICK_INCREMENT EQU 3
 	
 bomb_placed		DCD 0x00000000       ; Has a bomb been placed?
 bomb_detonated	DCD 0x00000000       ; Has the placed bomb been detonated?
@@ -768,6 +770,11 @@ begin_next_level
 	ADD a2, a2, #LEVEL_CLEARED_BONUS	 ; Update total score.
 	STR a2, [a1]						 ; score += LEVEL_CLEARED_BONUS
 	
+	LDR a1, =num_bricks
+	LDR a2, [a1]
+	ADD a2, a2, #BRICK_INCREMENT
+	STR a2, [a1]
+	
 	BL initialize_game
 	B game_loop
 
@@ -1299,9 +1306,8 @@ generate_brick_walls
 	LDR v1, =level          ; Load current level into v1.
 	LDR v1, [v1]
 	
-	MOV v3, #NUM_BRICKS     ; Number of bricks to generate. Might need
-	MUL v4, v1, v3          ; to be tweaked. 
-                            ; v2 = number of bricks = level * 10.
+	LDR v4, =num_bricks
+	LDR v4, [v4]    		; Number of bricks to generate.
 	
 	MOV v3, #0				; Initialize counter.
 	
@@ -1337,7 +1343,7 @@ place_brick
 
 	ADD v3, v3, #1          ; Increment counter.
 	CMP v3, v4
-	BNE try_place_brick
+	BLE try_place_brick
 
 	LDMFD sp!, {v1-v4, lr}
 	BX lr
