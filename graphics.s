@@ -18,6 +18,7 @@ BOARD_X_OFFSET EQU 0
 BOARD_Y_OFFSET EQU 3
 	
 score_message = "Score: ", 0
+timer_message = "Time: ", 0
 
 
 ;-------------------------------------------------------;
