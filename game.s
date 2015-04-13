@@ -13,6 +13,7 @@
 	EXPORT game_over_flag
 	EXPORT life_lost_flag
 	EXPORT clear_board
+	EXPORT score
 	
 	EXTERN game_loop
 	EXTERN T0MR0

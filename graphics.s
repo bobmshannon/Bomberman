@@ -4,6 +4,9 @@
 	EXTERN prev_board
 	EXTERN set_cursor_pos
 	EXTERN output_character
+	EXTERN score
+	EXTERN print_integer
+	EXTERN output_string
 	EXPORT draw
 	EXPORT draw_changes
 	EXPORT BOARD_WIDTH
@@ -13,6 +16,9 @@ BOARD_WIDTH    EQU 25
 BOARD_HEIGHT   EQU 13
 BOARD_X_OFFSET EQU 0
 BOARD_Y_OFFSET EQU 3
+	
+score_message = "Score: ", 0
+
 
 ;-------------------------------------------------------;
 ; @NAME                                                 ;
@@ -24,7 +30,20 @@ BOARD_Y_OFFSET EQU 3
 draw
 	STMFD sp!, {lr}
 	BL draw_board
+	BL draw_score
 	LDMFD sp!, {lr}
+	BX lr
+	
+draw_score
+	STMFD sp!, {lr, v1}
+	
+	LDR v1, =score_message
+	BL output_string
+	LDR a1, =score
+	LDR a1, [a1]
+	BL print_integer
+	
+	LDMFD sp!, {lr, v1}
 	BX lr
 
 draw_board
