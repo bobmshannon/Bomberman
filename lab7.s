@@ -29,11 +29,11 @@ T0MR0	EQU 0xE0004018	; Timer 0 Match Register 0
 T0MR	EQU 0xE0004018	; Timer 0 Match Register 0
 	
 refresh_timer_fired DCD 0x00000000
-	
+
 	ALIGN
 		
 intro_message = "Update this message!\n\rPress <SPACE> to begin game",0
-
+hide_cursor = "\x1B\x5B\x3F\x32\x35\x6C"
 	ALIGN
 		
 lab7	 	
@@ -44,6 +44,9 @@ lab7
 	BL uart_init
 	BL interrupt_init
 	BL timer_init
+	
+	LDR v1, = hide_cursor
+	BL output_string
 	
 	LDR v1, =intro_message
 	BL output_string
