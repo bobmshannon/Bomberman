@@ -16,6 +16,7 @@
 	EXTERN output_character
 	EXTERN print_integer
 	EXTERN set_cursor_pos
+	EXTERN seed
 
 U0BASE  EQU 0xE000C000	; UART0 Base Address	
 U0IER   EQU 0xE000C004	; UART0 Interrupt Enable Register
@@ -28,6 +29,12 @@ T0MR0	EQU 0xE0004018	; Timer 0 Match Register 0
 T0MR	EQU 0xE0004018	; Timer 0 Match Register 0
 	
 refresh_timer_fired DCD 0x00000000
+	
+	ALIGN
+		
+intro_message = "Update this message!\n\rPress <SPACE> to begin game",0
+
+	ALIGN
 		
 lab7	 	
 	STMFD sp!, {lr, r0-r4}
@@ -38,6 +45,23 @@ lab7
 	BL interrupt_init
 	BL timer_init
 	
+	LDR v1, =intro_message
+	BL output_string
+	
+	MOV a1, #0		; Init counter to create seed value
+	LDR a2, =keystroke
+info_loop
+	ADD a1, a1, #1
+	LDR a3, [a2]	; Check for a keypress (Space character)
+	CMP a3, #' '
+	BNE info_loop
+	
+	LDR a2, =seed
+	STR a1, [a2]	; Save the seeded value (Comment this out to have constant seed)
+	
+	MOV a1, #'\f'	;Clear the screen to display the game
+	BL output_character
+
 	BL initialize_game
 	
 	;Start the timer.  Let the games begin!
