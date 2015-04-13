@@ -1476,7 +1476,7 @@ place_brick
 
 	ADD v3, v3, #1          ; Increment counter.
 	CMP v3, v4
-	BLE try_place_brick
+	BLT try_place_brick
 
 	LDMFD sp!, {v1-v4, lr}
 	BX lr
