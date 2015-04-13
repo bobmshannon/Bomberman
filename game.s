@@ -10,6 +10,9 @@
 	EXPORT prev_board
 	EXPORT initialize_game
 	EXPORT update_game
+	EXPORT game_over_flag
+	EXPORT life_lost_flag
+	EXPORT clear_board
 	
 	EXTERN game_loop
 	EXTERN T0MR0
@@ -87,7 +90,11 @@ enemy_slow_moved DCD 0x00000000		 ; Did the slow enemies move last frame?
 
 num_enemies		DCD 0x00000003
 
-num_lives		DCD 0x00000000
+num_lives		DCD 0x00000003
+	
+game_over_flag	DCD 0x00000000
+	
+life_lost_flag	DCD 0x00000000
 
 level			DCD 0x00000001
 
@@ -99,8 +106,9 @@ game_over		DCD 0x00000000
 
 keystroke		DCD 0x00000000
 
-board 		= "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZZZZZZZZZZZZZZZZZZZZZZZZZ"
-prev_board 	= "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZZZZZZZZZZZZZZZZZZZZZZZZZ"
+board_clean = "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZZZZZZZZZZZZZZZZZZZZZZZZZ",0
+board 		= "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZZZZZZZZZZZZZZZZZZZZZZZZZ",0
+prev_board 	= "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZZZZZZZZZZZZZZZZZZZZZZZZZ",0
 
 	ALIGN
 	
@@ -115,6 +123,10 @@ prev_board 	= "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z
 initialize_game
 	STMFD sp!, {lr, v1}
 	
+	BL clear_bomb_detonation		; Clear the bomb blast if it exists
+
+	BL clear_board					; Clear the board of extra characters
+	
 	MOV a1, #0						; Reset bomb placement (Let you place a bomb right away)
 	LDR v1, =bomb_placed
 	STR a1, [v1]
@@ -125,7 +137,11 @@ initialize_game
 
 	MOV a1, #0						; Reset the enemy delay flag
 	LDR v1, =enemy_slow_moved
-	STR a1, [v1]	
+	STR a1, [v1]
+
+	MOV a1, #0						; Reset the life lost flag
+	LDR v1, =life_lost_flag
+	STR a1, [v1]
 
 	MOV a1, #BOMBERMAN_X_START
 	MOV a2, #BOMBERMAN_Y_START
@@ -178,6 +194,30 @@ initialize_game
 
 ;-------------------------------------------------------;
 ; @NAME                                                 ;
+; clear_board                                           ;
+;                                                       ;
+; @DESCRIPTION                                          ;
+; Cleans the board string of all characters except 'Z'  ;
+;-------------------------------------------------------;
+clear_board
+	STMFD SP!, {lr}
+	
+	LDR a1, =board_clean
+	LDR a2, =board
+	
+clear_board_loop
+	LDRB a3, [a1], #1		; Load the clean string character
+	CMP a3, #0				; Is it null?  If so, we're done.  Exit loop
+	BEQ clear_board_exit
+	STRB a3, [a2], #1		; Store the clean board character in the dirty board
+	B clear_board_loop
+
+clear_board_exit		
+	LDMFD SP!, {lr}
+	BX lr
+
+;-------------------------------------------------------;
+; @NAME                                                 ;
 ; update_game                                           ;
 ;                                                       ;
 ; @DESCRIPTION                                          ;
@@ -195,7 +235,7 @@ update_game
 	LDR a1, [a1]
 	BL move_bomberman            ; Move bomberman.
 	
-	;BL move_enemies				 ; Move all enemies
+	BL move_enemies				 ; Move all enemies
 
 	LDR a1, =keystroke
 	LDR a1, [a1]
@@ -279,8 +319,8 @@ detonate_bomb_west_loop
 	MOV a1, v7                   ; Current X-position (decremented after each loop iteration).
 	MOV a2, v2                   ; Y-position (fixed).
 	BL check_pos_char
-	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call game_over.
-	; Call game_over
+	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call kill_bomberman.
+	BLEQ kill_bomberman
 	
 	MOV a1, v7                   ; Current X-position (decremented after each loop iteration).
 	MOV a2, v2                   ; Y-position (fixed).
@@ -337,8 +377,8 @@ detonate_bomb_east_loop
 	MOV a1, v7                   ; Current X-position (incremented after each loop iteration).
 	MOV a2, v2                   ; Y-position (fixed).
 	BL check_pos_char
-	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call game_over.
-	; Call game_over
+	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call kill_bomberman.
+	BLEQ kill_bomberman
 	
 	MOV a1, v7                   ; Current X-position (incremented after each loop iteration).
 	MOV a2, v2                   ; Y-position (fixed).
@@ -394,8 +434,8 @@ detonate_bomb_south_loop
 	MOV a1, v1                   ; X-position (fixed).
 	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
 	BL check_pos_char
-	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call game_over.
-	; Call game_over
+	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call kill_bomberman.
+	BLEQ kill_bomberman
 	
 	MOV a1, v1                   ; Current X-position (fixed).
 	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
@@ -453,8 +493,8 @@ detonate_bomb_north_loop
 	MOV a1, v1                   ; X-position (fixed).
 	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
 	BL check_pos_char
-	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call game_over.
-	; Call game_over
+	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call kill_bomberman.
+	BLEQ kill_bomberman
 	
 	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
 	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
@@ -1070,6 +1110,34 @@ not_valid_move
 ;-------------------------------------------------------;
 return
 	LDMFD sp!, {lr}
+	BX lr
+
+;--------------------------------------------------------;
+; @NAME                                                  ;
+; kill_bomberman                                         ;
+;                                                        ;
+; @DESCRIPTION                                           ;
+; Checks if bomberman has any lives left. Sets the       ;
+; life lost (board reset or game over flags as neccesary ;
+;--------------------------------------------------------;
+kill_bomberman
+	STMFD SP!, {lr}
+	
+	LDR a2, =num_lives		; Load the remaining number of lives
+	LDR a1, [a2]
+	SUB a1, a1, #1			; Bomberman died, remove a life and save new value
+	STR a1, [a2]
+	
+	CMP a1, #0				; Do we have zero lives?
+	LDREQ a2, =game_over_flag
+	MOVEQ a3, #1
+	STREQ a3, [a2]			; If so, set flag to indicate game over condition (cause a game over)
+	
+	LDR a2, =life_lost_flag
+	MOV a3, #1
+	STR a3, [a2]			; Set flag to indicate a lost life (cause a reset)
+	
+	LDMFD SP!, {lr}
 	BX lr
 
 ;-------------------------------------------------------;
