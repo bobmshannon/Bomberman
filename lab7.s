@@ -37,6 +37,10 @@ refresh_timer_fired DCD 0x00000000
 		
 intro_message = "Update this message!\n\rPress <SPACE> to begin game",0
 hide_cursor = "\x1B[?25l", 0
+game_title = "Bomberman"
+game_over_message = "Game Over!"
+paused_message = "PAUSED"
+
 	ALIGN
 		
 lab7	 	
@@ -48,7 +52,7 @@ lab7
 	BL interrupt_init
 	BL timer_init
 	
-	
+	 
 	LDR v1, = hide_cursor
 	BL output_string
 	
@@ -75,6 +79,9 @@ info_loop
 	LDR a1, =T0TCR
 	MOV a2, #1
 	STR a2, [a1]
+	
+	LDR v1, =game_title
+	BL output_string
 
 	
 game_loop	
