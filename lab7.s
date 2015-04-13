@@ -47,12 +47,12 @@ lab7
 
 	
 game_loop	
-	LDR a1, =refresh_timer_fired
+	LDR a1, =refresh_timer_fired		; Reset the refresh timer flag
 	MOV a2, #0
 	STR a2, [a1]
 	
-	BL update_game
-	BL draw
+	BL update_game						; Update game logic
+	BL draw								; Draw board state
 	
 wait
 	LDR a1, =refresh_timer_fired

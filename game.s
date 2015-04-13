@@ -10,6 +10,8 @@
 	EXPORT prev_board
 	EXPORT initialize_game
 	EXPORT update_game
+	EXPORT game_over_flag
+	EXPORT life_lost_flag
 	
 	EXTERN game_loop
 	EXTERN T0MR0
@@ -86,6 +88,10 @@ enemy_slow_moved DCD 0x00000000		 ; Did the slow enemies move last frame?
 num_enemies		DCD 0x00000003
 
 num_lives		DCD 0x00000003
+	
+game_over_flag	DCD 0x00000000
+	
+life_lost_flag	DCD 0x00000000
 
 level			DCD 0x00000001
 
@@ -123,7 +129,11 @@ initialize_game
 
 	MOV a1, #0						; Reset the enemy delay flag
 	LDR v1, =enemy_slow_moved
-	STR a1, [v1]	
+	STR a1, [v1]
+
+	MOV a1, #0						; Reset the life lost flag
+	LDR v1, =life_lost_flag
+	STR a1, [v1]
 
 	MOV a1, #BOMBERMAN_X_START
 	MOV a2, #BOMBERMAN_Y_START
@@ -1065,17 +1075,28 @@ return
 	LDMFD sp!, {lr}
 	BX lr
 
-;-------------------------------------------------------;
-; @NAME                                                 ;
-; kill_bomberman                                        ;
-;                                                       ;
-; @DESCRIPTION                                          ;
-; Checks if bomberman has any lives left. Causes a      ;
-; level reset or a game over as neccesary
-;-------------------------------------------------------;
+;--------------------------------------------------------;
+; @NAME                                                  ;
+; kill_bomberman                                         ;
+;                                                        ;
+; @DESCRIPTION                                           ;
+; Checks if bomberman has any lives left. Sets the       ;
+; life lost (board reset or game over flags as neccesary ;
+;--------------------------------------------------------;
 kill_bomberman
 	STMFD SP!, {lr}
 	
+	LDR a2, =num_lives		; Load the remaining number of lives
+	LDR a1, [a2]
+	SUB a1, a1, #1			; Bomberman died, remove a life and save new value
+	
+	CMP a1, #0				; Do we have zero lives?
+	LDREQ a2, =game_over_flag
+	MOVEQ a3, #1
+	STREQ a3, [a2]			; If so, set flag to indicate game over condition
+	
+	LDR a2, =life_lost_flag
+	STR a3, [a2]			; Set flag to indicate a lost life (cause a reset)
 	
 	LDMFD SP!, {lr}
 	BX lr
