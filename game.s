@@ -1199,6 +1199,12 @@ move_enemies
 	LDR v3, =enemy1_y_pos
 	STR v2, [v3]
 	
+	MOV a1, v1						; Check new location to see if bomberman is there
+	MOV a2, v2
+	BL check_pos_char
+	CMP a1, #BOMBERMAN
+	BLEQ kill_bomberman				; If we're moving onto bomberman, kill him
+
 	MOV a1, v1						; Put new location in argument registers
 	MOV a2, v2
 	MOV a3, #ENEMY_SLOW
@@ -1241,6 +1247,12 @@ enemy1_move_skip
 	LDR v3, =enemy2_y_pos
 	STR v2, [v3]
 
+	MOV a1, v1						; Check new location to see if bomberman is there
+	MOV a2, v2
+	BL check_pos_char
+	CMP a1, #BOMBERMAN
+	BLEQ kill_bomberman				; If we're moving onto bomberman, kill him
+
 	MOV a1, v1						; Put new location in argument registers
 	MOV a2, v2
 	MOV a3, #ENEMY_SLOW
@@ -1282,6 +1294,12 @@ enemy2_move_skip
 	STR v1, [v3]
 	LDR v3, =enemy3_y_pos
 	STR v2, [v3]
+
+	MOV a1, v1						; Check new location to see if bomberman is there
+	MOV a2, v2
+	BL check_pos_char
+	CMP a1, #BOMBERMAN
+	BLEQ kill_bomberman				; If we're moving onto bomberman, kill him
 
 	MOV a1, v1						; Put new location in argument registers
 	MOV a2, v2
