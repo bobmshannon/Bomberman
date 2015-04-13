@@ -12,6 +12,7 @@
 	EXPORT update_game
 	EXPORT game_over_flag
 	EXPORT life_lost_flag
+	EXPORT clear_board
 	
 	EXTERN game_loop
 	EXTERN T0MR0
@@ -103,8 +104,9 @@ game_over		DCD 0x00000000
 
 keystroke		DCD 0x00000000
 
-board 		= "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZZZZZZZZZZZZZZZZZZZZZZZZZ"
-prev_board 	= "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZZZZZZZZZZZZZZZZZZZZZZZZZ"
+board_clean = "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZZZZZZZZZZZZZZZZZZZZZZZZZ",0
+board 		= "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZZZZZZZZZZZZZZZZZZZZZZZZZ",0
+prev_board 	= "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZZZZZZZZZZZZZZZZZZZZZZZZZ",0
 
 	ALIGN
 	
@@ -188,6 +190,29 @@ initialize_game
 
 ;-------------------------------------------------------;
 ; @NAME                                                 ;
+; clear_board                                           ;
+;                                                       ;
+; @DESCRIPTION                                          ;
+; Cleans the board string of all characters except 'Z'  ;
+;-------------------------------------------------------;
+clear_board
+	STMFD SP!, {lr}
+	
+	LDR a1, =board_clean
+	LDR a2, =board
+	
+clear_board_loop
+	LDRB a3, [a1], #1		; Load the clean string character
+	CMP a3, #0				; Is it null?  If so, we're done.  Exit loop
+	BEQ clear_board_exit
+	STRB a3, [a1], #1		; Store the clean board character in the dirty board
+
+clear_board_exit		
+	LDMFD SP!, {lr}
+	BX lr
+
+;-------------------------------------------------------;
+; @NAME                                                 ;
 ; update_game                                           ;
 ;                                                       ;
 ; @DESCRIPTION                                          ;
@@ -205,7 +230,7 @@ update_game
 	LDR a1, [a1]
 	BL move_bomberman            ; Move bomberman.
 	
-	BL move_enemies				 ; Move all enemies
+	;BL move_enemies				 ; Move all enemies
 
 	LDR a1, =keystroke
 	LDR a1, [a1]
