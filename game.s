@@ -1317,6 +1317,37 @@ try_place_brick
 	BL rand                 ; will be placed.
 	MOV v2, a1
 	
+	MOV a3, #-1
+	MOV a4, #-2
+	
+	LDR a1, =bomberman_x_pos
+	LDR a1, [a1]
+	LDR a2, =bomberman_y_pos
+	LDR a2, [a2]
+	ADD a1, a1, #1
+	CMP a1, v1
+	MOVEQ a3, #1
+	CMP a2, v2
+	MOVEQ a4, #1
+	CMP a3, a4
+	BEQ try_place_brick
+	
+	MOV a3, #-1
+	MOV a4, #-2
+	
+	LDR a1, =bomberman_x_pos
+	LDR a1, [a1]
+	LDR a2, =bomberman_y_pos
+	LDR a2, [a2]
+	ADD a2, a2, #1
+	CMP a1, v1
+	MOVEQ a3, #1
+	CMP a2, v2
+	MOVEQ a4, #1
+	CMP a3, a4
+	BEQ try_place_brick
+	
+	
 	MOV a1, v1              ; Restrict the range of the random number
 	MOV a2, #0              ; such that X is an element of [0, BOARD_WIDTH]
 	ADD a2, a2, #BOARD_WIDTH    
