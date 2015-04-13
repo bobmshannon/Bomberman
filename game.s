@@ -1044,6 +1044,17 @@ move_bomberman
 	MOV v3, a1
 	MOV v4, a2
 	
+	BL check_pos_char
+	CMP a1, #ENEMY_SLOW
+	BLEQ kill_bomberman
+	
+	MOV a1, v3
+	MOV a2, v3
+	CMP a1, #ENEMY_FAST
+	BLEQ kill_bomberman
+	
+	MOV a1, v3
+	MOV a2, v4
 	BL check_pos                   ; Is the destination a free position?
 	CMP a1, #0
 	BEQ not_valid_move
