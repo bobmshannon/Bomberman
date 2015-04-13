@@ -122,6 +122,8 @@ initialize_game
 	STMFD sp!, {lr, v1}
 	
 	BL clear_bomb_detonation		; Clear the bomb blast if it exists
+
+	BL clear_board					; Clear the board of extra characters
 	
 	MOV a1, #0						; Reset bomb placement (Let you place a bomb right away)
 	LDR v1, =bomb_placed
@@ -205,7 +207,8 @@ clear_board_loop
 	LDRB a3, [a1], #1		; Load the clean string character
 	CMP a3, #0				; Is it null?  If so, we're done.  Exit loop
 	BEQ clear_board_exit
-	STRB a3, [a1], #1		; Store the clean board character in the dirty board
+	STRB a3, [a2], #1		; Store the clean board character in the dirty board
+	B clear_board_loop
 
 clear_board_exit		
 	LDMFD SP!, {lr}
@@ -230,7 +233,7 @@ update_game
 	LDR a1, [a1]
 	BL move_bomberman            ; Move bomberman.
 	
-	;BL move_enemies				 ; Move all enemies
+	BL move_enemies				 ; Move all enemies
 
 	LDR a1, =keystroke
 	LDR a1, [a1]
