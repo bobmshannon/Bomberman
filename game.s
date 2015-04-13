@@ -238,6 +238,11 @@ update_game
 	CMP a2, #0
 	BLEQ move_bomberman            ; Move bomberman.
 	
+	LDR a1, =life_lost_flag
+	LDR a1, [a1]
+	CMP a1, #1
+	BEQ update_game_exit
+	
 	;BL move_enemies				 ; Move all enemies
 
 	LDR a1, =keystroke
@@ -261,7 +266,7 @@ update_game
 	ADD a2, a2, #1               
 	STR a2, [a1]                 ; Increment bomb timer.
 	
-	
+update_game_exit
 	LDR v1, =keystroke
 	MOV a1, #0                   ; Reset keystroke.
 	STR a1, [v1]
