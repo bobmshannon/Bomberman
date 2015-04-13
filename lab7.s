@@ -146,7 +146,7 @@ timer_init
 	STR r1, [r0]
 	
 	LDR r0, =T0MR0
-	LDR r1, =0x8CA29C		;Set MR0 to .5 second intervals
+	LDR r1, =0x46514E		;Set MR0 to .25 second intervals
 	;LDR r1, =0x1C2000       ;Set MR0 to 0.1 second intervals
 	;LDR r1, =0x1194538		; Set MR0 to 1s intervals
 	STR r1, [r0]

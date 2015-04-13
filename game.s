@@ -233,7 +233,10 @@ update_game
 	
 	LDR  a1, =keystroke
 	LDR a1, [a1]
-	BL move_bomberman            ; Move bomberman.
+	LDR a2, =enemy_slow_moved	 ; Is this an odd frame?
+	LDR a2, [a2]
+	CMP a2, #0
+	BLEQ move_bomberman            ; Move bomberman.
 	
 	BL move_enemies				 ; Move all enemies
 
