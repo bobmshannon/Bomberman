@@ -119,6 +119,8 @@ prev_board 	= "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z
 initialize_game
 	STMFD sp!, {lr, v1}
 	
+	BL clear_bomb_detonation		; Clear the bomb blast if it exists
+	
 	MOV a1, #0						; Reset bomb placement (Let you place a bomb right away)
 	LDR v1, =bomb_placed
 	STR a1, [v1]
@@ -287,8 +289,8 @@ detonate_bomb_west_loop
 	MOV a1, v7                   ; Current X-position (decremented after each loop iteration).
 	MOV a2, v2                   ; Y-position (fixed).
 	BL check_pos_char
-	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call game_over.
-	; Call game_over
+	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call kill_bomberman.
+	BLEQ kill_bomberman
 	
 	MOV a1, v7                   ; Current X-position (decremented after each loop iteration).
 	MOV a2, v2                   ; Y-position (fixed).
@@ -345,8 +347,8 @@ detonate_bomb_east_loop
 	MOV a1, v7                   ; Current X-position (incremented after each loop iteration).
 	MOV a2, v2                   ; Y-position (fixed).
 	BL check_pos_char
-	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call game_over.
-	; Call game_over
+	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call kill_bomberman.
+	BLEQ kill_bomberman
 	
 	MOV a1, v7                   ; Current X-position (incremented after each loop iteration).
 	MOV a2, v2                   ; Y-position (fixed).
@@ -402,8 +404,8 @@ detonate_bomb_south_loop
 	MOV a1, v1                   ; X-position (fixed).
 	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
 	BL check_pos_char
-	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call game_over.
-	; Call game_over
+	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call kill_bomberman.
+	BLEQ kill_bomberman
 	
 	MOV a1, v1                   ; Current X-position (fixed).
 	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
@@ -461,8 +463,8 @@ detonate_bomb_north_loop
 	MOV a1, v1                   ; X-position (fixed).
 	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
 	BL check_pos_char
-	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call game_over.
-	; Call game_over
+	CMP a1, #BOMBERMAN           ; Is it bomberman? If so, call kill_bomberman.
+	BLEQ kill_bomberman
 	
 	MOV a1, v1                   ; Current X-position (incremented after each loop iteration).
 	MOV a2, v7                   ; Y-position (incremented after each loop iteration).
@@ -1089,13 +1091,15 @@ kill_bomberman
 	LDR a2, =num_lives		; Load the remaining number of lives
 	LDR a1, [a2]
 	SUB a1, a1, #1			; Bomberman died, remove a life and save new value
+	STR a1, [a2]
 	
 	CMP a1, #0				; Do we have zero lives?
 	LDREQ a2, =game_over_flag
 	MOVEQ a3, #1
-	STREQ a3, [a2]			; If so, set flag to indicate game over condition
+	STREQ a3, [a2]			; If so, set flag to indicate game over condition (cause a game over)
 	
 	LDR a2, =life_lost_flag
+	MOV a3, #1
 	STR a3, [a2]			; Set flag to indicate a lost life (cause a reset)
 	
 	LDMFD SP!, {lr}
