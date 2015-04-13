@@ -238,7 +238,7 @@ update_game
 	CMP a2, #0
 	BLEQ move_bomberman            ; Move bomberman.
 	
-	BL move_enemies				 ; Move all enemies
+	;BL move_enemies				 ; Move all enemies
 
 	LDR a1, =keystroke
 	LDR a1, [a1]
@@ -1047,9 +1047,6 @@ move_bomberman
 	BL check_pos_char
 	CMP a1, #ENEMY_SLOW
 	BLEQ kill_bomberman
-	
-	MOV a1, v3
-	MOV a2, v4
 	CMP a1, #ENEMY_FAST
 	BLEQ kill_bomberman
 	
