@@ -35,12 +35,12 @@ refresh_timer_fired DCD 0x00000000
 
 	ALIGN
 		
-intro_message = "Update this message!\n\rPress <SPACE> to begin game",0
+;intro_message = "Update this message!\n\rPress <SPACE> to begin game",0
 hide_cursor = "\x1B[?25l", 0
 game_title = "Bomberman", 0
 game_over_message = "Game Over!", 0
 paused_message = "PAUSED", 0
-
+intro_message = "______                 _                                     | ___ \\               | |    \n\r                               | |_/ / ___  _ __ ___ | |__   ___ _ __ _ __ ___   __ _ _ __  \n\r  | ___ \\/ _ \\| '_ ` _ \\| '_ \\ / _ \\ '__| '_ ` _ \\ / _` | '_ \\ \n\r   | |_/ / (_) | | | | | | |_) |  __/ |  | | | | | | (_| | | | |  \n\r \\____/ \\___/|_| |_| |_|_.__/ \\___|_|  |_| |_| |_|\\__,_|_| |_|  \n\r \n\r                                                              \n\r  		  To play, use the 'w', 'a', 's', and 'd' keys to move \n\r    Bomberman around the map. To place a bomb, use the 'x' key. \n\r   \n\r Once a bomb detonates, all enemies, brick wall within the blast radius.  \n\r \n\r The legend for each entity on the map is shown below. \n\r  	B - Bomberman   \n\r 	+ - Fast Enemy   \n\r 	ð - Slow Enemy   \n\r 	Z - Indestructible Barrier \n\r   	# - Destructible Brick Wall  \n\r", 0
 	ALIGN
 		
 lab7	 	
