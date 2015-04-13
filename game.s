@@ -1049,7 +1049,7 @@ move_bomberman
 	BLEQ kill_bomberman
 	
 	MOV a1, v3
-	MOV a2, v3
+	MOV a2, v4
 	CMP a1, #ENEMY_FAST
 	BLEQ kill_bomberman
 	
