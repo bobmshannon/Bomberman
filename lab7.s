@@ -16,6 +16,9 @@
 	EXTERN output_character
 	EXTERN print_integer
 	EXTERN set_cursor_pos
+		
+	EXTERN life_lost_flag
+	EXTERN game_over_flag
 
 U0BASE  EQU 0xE000C000	; UART0 Base Address	
 U0IER   EQU 0xE000C004	; UART0 Interrupt Enable Register
@@ -53,6 +56,11 @@ game_loop
 	
 	BL update_game						; Update game logic
 	BL draw								; Draw board state
+	
+	LDR a1, =life_lost_flag				; Check if we lost a life last tick
+	LDR a1, [a1]
+	CMP a1, #1
+	BLEQ initialize_game					; If we did, reset the game state
 	
 wait
 	LDR a1, =refresh_timer_fired
