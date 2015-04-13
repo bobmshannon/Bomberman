@@ -43,7 +43,7 @@ ENEMY_MULTIPLIER     EQU 10			 ; Score multiplier when enemy is killed (score +=
 LEVEL_CLEARED_BONUS  EQU 100		 ; Score bonus when level is completed (score += 100)
 LIFE_REMAININING_BONUS EQU 25		 ; Score bonus awarded for each life remaining when game is over (score += num_lives * life_remaining_bonus)
 	
-MAX_LEVEL        EQU 4               ; Maximum level user can reach. After the player passes this level,
+MAX_LEVEL        EQU 5               ; Maximum level user can reach. After the player passes this level,
 								     ; the game no longer increases in speed.
 	
 BOMBERMAN_X_START EQU 1              ; Bomberman starting x-position.
@@ -809,8 +809,9 @@ level_up
 increase_speed
 	LDR a1, =T0MR0
 	LDR a2, [a1]
-	LSR a2, a2, #1			
-	STR a2, [a1]				; Double the speed of the game.	
+	;LSR a2, a2, #1		
+	SUB a2, a2, #0xE1000		; Decrease timer period by 0.1s
+	STR a2, [a1]				; Increse the speed of the game.	
 	
 
 begin_next_level
