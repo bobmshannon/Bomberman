@@ -33,6 +33,8 @@ T0MR	EQU 0xE0004018	; Timer 0 Match Register 0
 	
 refresh_timer_fired DCD 0x00000000
 
+countdown_timer
+
 	ALIGN
 		
 intro_message = "Update this message!\n\rPress <SPACE> to begin game",0
