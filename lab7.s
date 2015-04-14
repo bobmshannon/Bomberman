@@ -40,7 +40,10 @@ hide_cursor = "\x1B[?25l", 0
 game_title = "Bomberman", 0
 game_over_message = "Game Over!", 0
 paused_message = "PAUSED", 0
-intro_message = "______                 _                                     | ___ \\               | |    \n\r                               | |_/ / ___  _ __ ___ | |__   ___ _ __ _ __ ___   __ _ _ __  \n\r  | ___ \\/ _ \\| '_ ` _ \\| '_ \\ / _ \\ '__| '_ ` _ \\ / _` | '_ \\ \n\r   | |_/ / (_) | | | | | | |_) |  __/ |  | | | | | | (_| | | | |  \n\r \\____/ \\___/|_| |_| |_|_.__/ \\___|_|  |_| |_| |_|\\__,_|_| |_|  \n\r \n\r                                                              \n\r  		  To play, use the 'w', 'a', 's', and 'd' keys to move \n\r    Bomberman around the map. To place a bomb, use the 'x' key. \n\r   \n\r Once a bomb detonates, all enemies, brick wall within the blast radius.  \n\r \n\r The legend for each entity on the map is shown below. \n\r  	B - Bomberman   \n\r 	+ - Fast Enemy   \n\r 	ð - Slow Enemy   \n\r 	Z - Indestructible Barrier \n\r   	# - Destructible Brick Wall  \n\r", 0
+title = "\n\r|-----------------------------------------------------------------------------------------------------------------------| \n\r|  __________   ___________  __       __  __________   ___________  ___________  __       __  ___________  __        _  | \n\r| ¦¦¦¦¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦     ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦     ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦      ¦¦¦ | \n\r| ¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦¦¦   ¦¦¦¦¦¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦¯¯¯¯¯¯¯¯¯ ¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦¦¦   ¦¦¦¦¦¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦¦¦     ¦¦¦ | \n\r| ¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦¦¦¦       ¦¦¦¦¦¦          ¦¦¦       ¦¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦¦¦¦       ¦¦¦¦¦¦¦¦¦    ¦¦¦ | \n\r| ¦¦¦_______¦¦¦¦¦¦       ¦¦¦¦¦¦ ¦¦¦¦¦ ¦¦¦¦¦¦_______¦¦¦¦¦¦_________ ¦¦¦_______¦¦¦¦¦¦ ¦¦¦¦¦ ¦¦¦¦¦¦_______¦¦¦¦¦¦ ¦¦¦   ¦¦¦ | \n\r| ¦¦¦¦¦¦¦¦¦¦¦¦ ¦¦¦       ¦¦¦¦¦¦  ¦¦¦  ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦  ¦¦¦  ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦  ¦¦¦  ¦¦¦ | \n\r| ¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦       ¦¦¦¦¦¦   ¯   ¦¦¦¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦¯¯¯¯¯¯¯¯¯ ¦¦¦¯¯¯¯¦¦¦¯¯ ¦¦¦   ¯   ¦¦¦¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦   ¦¦¦ ¦¦¦ | \n\r| ¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦          ¦¦¦     ¦¦¦  ¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦    ¦¦¦¦¦¦ | \n\r| ¦¦¦_______¦¦¦¦¦¦_______¦¦¦¦¦¦       ¦¦¦¦¦¦_______¦¦¦¦¦¦_________ ¦¦¦      ¦¦¦ ¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦     ¦¦¦¦¦ | \n\r| ¦¦¦¦¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦       ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦      ¦¦¦¦ | \n\r|  ¯¯¯¯¯¯¯¯¯¯   ¯¯¯¯¯¯¯¯¯¯¯  ¯         ¯  ¯¯¯¯¯¯¯¯¯¯   ¯¯¯¯¯¯¯¯¯¯¯  ¯         ¯  ¯         ¯  ¯         ¯  ¯        ¯¯  | \n\r|-----------------------------------------------------------------------------------------------------------------------|", 0
+instructions = "\n\r| To play, use the 'w', 'a', 's', and 'd' keys to move Bomberman around the map.                                        | \n\r|                                                                                                                       | \n\r| To place a bomb, use the 'x' key. Once a bomb detonates, everything within the blast radius will be destroyed.        | \n\r|                                                                                                                       | \n\r| To win the game, destroy as many enemies and brick walls as possible without running out of lives.                    | \n\r|                                                                                                                       | \n\r| The legend for each entity on the map is shown below.                                                                 | \n\r|                                                                                                                       | \n\r|                                                   B - Bomberman                                                       | \n\r|                                                   + - Fast Enemy                                                      | \n\r|                                                   ð - Bomb                                                            | \n\r|                                                   Z - Indestructible Barrier                                          | \n\r|                                                   # - Destructible Brick Wall                                         | \n\r|-----------------------------------------------------------------------------------------------------------------------|", 0		
+enter_to_play = "\n\r \n\r            \n\r                 ¦¦¦¦¦¦+ ¦¦¦¦¦¦+ ¦¦¦¦¦¦¦+¦¦¦¦¦¦¦+¦¦¦¦¦¦¦+    ¦¦¦¦¦¦¦+¦¦¦+   ¦¦+¦¦¦¦¦¦¦¦+¦¦¦¦¦¦¦+¦¦¦¦¦¦+     \n\r                 ¦¦+--¦¦+¦¦+--¦¦+¦¦+----+¦¦+----+¦¦+----+    ¦¦+----+¦¦¦¦+  ¦¦¦+--¦¦+--+¦¦+----+¦¦+--¦¦+    \n\r                 ¦¦¦¦¦¦++¦¦¦¦¦¦++¦¦¦¦¦+  ¦¦¦¦¦¦¦+¦¦¦¦¦¦¦+    ¦¦¦¦¦+  ¦¦+¦¦+ ¦¦¦   ¦¦¦   ¦¦¦¦¦+  ¦¦¦¦¦¦++    \n\r                 ¦¦+---+ ¦¦+--¦¦+¦¦+--+  +----¦¦¦+----¦¦¦    ¦¦+--+  ¦¦¦+¦¦+¦¦¦   ¦¦¦   ¦¦+--+  ¦¦+--¦¦+    \n\r                 ¦¦¦     ¦¦¦  ¦¦¦¦¦¦¦¦¦¦+¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦    ¦¦¦¦¦¦¦+¦¦¦ +¦¦¦¦¦   ¦¦¦   ¦¦¦¦¦¦¦+¦¦¦  ¦¦¦    \n\r                 +-+     +-+  +-++------++------++------+    +------++-+  +---+   +-+   +------++-+  +-+    \n\r                                                                                                                \n\r                                 ¦¦¦¦¦¦¦¦+ ¦¦¦¦¦¦+     ¦¦¦¦¦¦+ ¦¦+      ¦¦¦¦¦+ ¦¦+   ¦¦+¦¦+                     \n\r                                 +--¦¦+--+¦¦+---¦¦+    ¦¦+--¦¦+¦¦¦     ¦¦+--¦¦++¦¦+ ¦¦++¦¦¦                     \n\r                                    ¦¦¦   ¦¦¦   ¦¦¦    ¦¦¦¦¦¦++¦¦¦     ¦¦¦¦¦¦¦¦ +¦¦¦¦++ ¦¦¦                     \n\r                                    ¦¦¦   ¦¦¦   ¦¦¦    ¦¦+---+ ¦¦¦     ¦¦+--¦¦¦  +¦¦++  +-+                     \n\r                                    ¦¦¦   +¦¦¦¦¦¦++    ¦¦¦     ¦¦¦¦¦¦¦+¦¦¦  ¦¦¦   ¦¦¦   ¦¦+                     \n\r                                    +-+    +-----+     +-+     +------++-+  +-+   +-+   +-+", 0   
+
 	ALIGN
 		
 lab7	 	
@@ -56,15 +59,21 @@ lab7
 	LDR v1, = hide_cursor
 	BL output_string
 	
-	LDR v1, =intro_message
+	LDR v1, =title
+	BL output_string
+	
+	LDR v1, =instructions
+	BL output_string
+	
+	LDR v1, =enter_to_play
 	BL output_string
 	
 	MOV a1, #0		; Init counter to create seed value
 	LDR a2, =keystroke
 info_loop
 	ADD a1, a1, #1
-	LDR a3, [a2]	; Check for a keypress (Space character)
-	CMP a3, #' '
+	LDR a3, [a2]	; Check for a keypress (Enter key)
+	CMP a3, #'\r'
 	BNE info_loop
 	
 	LDR a2, =seed
