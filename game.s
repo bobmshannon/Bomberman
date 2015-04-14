@@ -14,6 +14,7 @@
 	EXPORT life_lost_flag
 	EXPORT clear_board
 	EXPORT score
+	EXPORT time
 	
 	EXTERN game_loop
 	EXTERN T0MR0

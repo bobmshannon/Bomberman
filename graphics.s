@@ -5,6 +5,7 @@
 	EXTERN set_cursor_pos
 	EXTERN output_character
 	EXTERN score
+	EXTERN time
 	EXTERN print_integer
 	EXTERN output_string
 	EXPORT draw
@@ -18,7 +19,8 @@ BOARD_X_OFFSET EQU 0
 BOARD_Y_OFFSET EQU 3
 	
 score_message = "Score: ", 0
-
+time_message = "\nTime: ", 0
+	ALIGN
 
 ;-------------------------------------------------------;
 ; @NAME                                                 ;
@@ -29,8 +31,10 @@ score_message = "Score: ", 0
 ;-------------------------------------------------------;
 draw
 	STMFD sp!, {lr}
-	BL draw_board
+	
 	BL draw_score
+	BL draw_time
+	BL draw_board
 	LDMFD sp!, {lr}
 	BX lr
 	
@@ -40,6 +44,18 @@ draw_score
 	LDR v1, =score_message
 	BL output_string
 	LDR a1, =score
+	LDR a1, [a1]
+	BL print_integer
+	
+	LDMFD sp!, {lr, v1}
+	BX lr
+	
+draw_time
+	STMFD sp!, {lr, v1}
+	
+	LDR v1, =time_message
+	BL output_string
+	LDR a1, =time
 	LDR a1, [a1]
 	BL print_integer
 	

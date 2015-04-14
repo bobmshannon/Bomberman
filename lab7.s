@@ -56,17 +56,17 @@ lab7
 	BL timer_init
 	
 	 
-	LDR v1, = hide_cursor
-	BL output_string
+	;LDR v1, =hide_cursor
+	;BL output_string
 	
-	LDR v1, =title
-	BL output_string
+	;LDR v1, =title
+	;BL output_string
 	
-	LDR v1, =instructions
-	BL output_string
+	;LDR v1, =instructions
+	;BL output_string
 	
-	LDR v1, =enter_to_play
-	BL output_string
+	;LDR v1, =enter_to_play
+	;BL output_string
 	
 	MOV a1, #0		; Init counter to create seed value
 	LDR a2, =keystroke
