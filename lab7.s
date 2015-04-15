@@ -21,6 +21,7 @@
 	EXTERN life_lost_flag
 	EXTERN game_over
 	EXTERN draw_game_over
+	EXTERN reset_game
 
 
 U0BASE  EQU 0xE000C000	; UART0 Base Address	
@@ -119,9 +120,9 @@ game_loop
 	CMP v1, #1
 	BLEQ draw_game_over
 	CMP v1, #1
-	BEQ restart_game					;
-
-
+	BLEQ reset_game	
+	CMP v1, #1 
+	BEQ end_screen
 	
 	LDR a1, =is_paused
 	LDR a1, [a1]
@@ -134,7 +135,7 @@ game_loop
 	LDR a1, =life_lost_flag				; Check if we lost a life last tick
 	LDR a1, [a1]
 	CMP a1, #1
-	BLEQ initialize_game					; If we did, reset the game state
+	BLEQ initialize_game				; If we did, reset the game state
 	
 wait
 	LDR a1, =refresh_timer_fired
@@ -157,12 +158,28 @@ resume_game
 	LDMFD sp!, {lr}
 	BX lr
 	
+
+end_screen
+	MOV a1, #0		; Init counter to create seed value
+	LDR a2, =keystroke
+end_screen_loop
+	ADD a1, a1, #1
+	LDR a3, [a2]	; Check for a keypress (Enter key)
+	CMP a3, #'\r'
+	BNE info_loop
+	
+	LDR a2, =seed
+	STR a1, [a2]	; Save the seeded value (Comment this out to have constant seed)
+	
+	MOV a1, #'\f'	 ;Clear the screen to display the game
+	BL output_character
+
+	BL initialize_game
+	B game_loop
+	
 exit
 	LDMFD sp!, {lr, r0-r4}
 	BX lr
-
-restart_game
-	B restart_game
 	
 ; ---------------------------------------------;
 ; Interrupt initialization code.               ;

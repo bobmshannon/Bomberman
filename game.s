@@ -13,6 +13,7 @@
 	EXPORT game_over
 	EXPORT life_lost_flag
 	EXPORT clear_board
+	EXPORT reset_game
 	EXPORT score
 	
 	EXTERN game_loop
@@ -108,6 +109,38 @@ board 		= "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z
 prev_board 	= "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZZZZZZZZZZZZZZZZZZZZZZZZZ",0
 
 	ALIGN
+
+;-------------------------------------------------------;
+; @NAME                                                 ;
+; reset_game                                            ;
+;                                                       ;
+; @DESCRIPTION                                          ;
+; Reset game parameters.                                ;
+;-------------------------------------------------------;
+reset_game
+	STMFD sp!, {lr}
+	LDR a1, =level					; Reset level back to 1.
+	MOV a2, #1
+	STR a2, [a1]
+	
+	LDR a1, =score
+	MOV a2, #0
+	STR a2, [a1]					; Reset score back to 0.
+	
+	LDR a1, =game_over
+	MOV a2, #0
+	STR a2, [a1]					; Set game state to active.
+	
+	LDR a1, =num_bricks
+	MOV a2, #10
+	STR a2, [a1]					; Reset initial number of bricks back to 10.
+
+	LDR a1, =num_lives
+	MOV a2, #3
+	STR a2, [a1]					; Reset number of bomberman lives back to 3.
+	
+	LDMFD sp!, {lr}
+	BX lr
 	
 ;-------------------------------------------------------;
 ; @NAME                                                 ;
@@ -128,7 +161,7 @@ initialize_game
 	LDR v1, =bomb_placed
 	STR a1, [v1]
 
-	MOV a1, #3						; Reset enemy live count to 3
+	MOV a1, #3						; Reset enemy count to 3
 	LDR v1, =num_enemies
 	STR a1, [v1]
 
