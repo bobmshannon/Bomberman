@@ -20,6 +20,7 @@
 	EXTERN seed
 	EXTERN life_lost_flag
 	EXTERN game_over
+	EXTERN draw_game_over
 
 
 U0BASE  EQU 0xE000C000	; UART0 Base Address	
@@ -117,7 +118,7 @@ game_loop
 	LDR a1, =game_over					; Check for game over condition
 	LDR a1, [v1]
 	CMP v1, #1
-	;BLEQ draw_game_over
+	BLEQ draw_game_over
 	CMP v1, #1
 	;BEQ restart_game					;
 
