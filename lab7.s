@@ -31,7 +31,10 @@ T0MCR	EQU 0xE0004014	; Timer 0 Match Control Register
 T0MR0	EQU 0xE0004018	; Timer 0 Match Register 0
 T0MR	EQU 0xE0004018	; Timer 0 Match Register 0
 	
+PAUSE_KEY EQU 'p'
+	
 refresh_timer_fired DCD 0x00000000
+is_paused DCD 0x00000000
 
 	ALIGN
 		
@@ -98,6 +101,11 @@ game_loop
 	MOV a2, #0
 	STR a2, [a1]
 	
+	LDR a1, =is_paused
+	LDR a1, [a1]
+	CMP a1, #1
+	BLEQ pause_game
+	
 	BL update_game						; Update game logic
 	BL draw								; Draw board state
 	
@@ -114,6 +122,18 @@ wait
 	
 	B game_loop
 	
+pause_game
+	STMFD sp!, {lr}
+	
+pause_loop
+	LDR a1, =is_paused
+	LDR a1, [a1]
+	CMP a1, #1
+	BEQ pause_loop
+	
+resume_game
+	LDMFD sp!, {lr}
+	BX lr
 	
 exit
 	LDMFD sp!, {lr, r0-r4}
