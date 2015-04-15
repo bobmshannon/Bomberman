@@ -109,6 +109,8 @@ info_loop
 	LDR v1, =game_title
 	BL output_string
 
+restart_game
+	B restart_game
 	
 game_loop	
 	LDR a1, =refresh_timer_fired		; Reset the refresh timer flag
@@ -120,7 +122,7 @@ game_loop
 	CMP v1, #1
 	BLEQ draw_game_over
 	CMP v1, #1
-	;BEQ restart_game					;
+	BEQ restart_game					;
 
 
 	
