@@ -15,6 +15,7 @@
 	EXPORT clear_board
 	EXPORT reset_game
 	EXPORT score
+	EXPORT time_left
 	
 	EXTERN game_loop
 	EXTERN T0MR0
@@ -46,7 +47,6 @@ LIFE_REMAININING_BONUS EQU 25		 ; Score bonus awarded for each life remaining wh
 	
 MAX_LEVEL        EQU 5               ; Maximum level user can reach. After the player passes this level,
 								     ; the game no longer increases in speed.
-	
 BOMBERMAN_X_START EQU 1              ; Bomberman starting x-position.
 BOMBERMAN_Y_START EQU 1              ; Bomberman starting y-position.
 	
@@ -63,8 +63,10 @@ BOMB_TIMEOUT    EQU 10               ; After many refreshes the bomb should deto
 BLAST_X_RADIUS  EQU 4                ; Horizontal blast radius.
 BLAST_Y_RADIUS  EQU 2                ; Vertical blast radius.
 	
-num_bricks      DCD 0x0000000A
-BRICK_INCREMENT EQU 3
+num_bricks      DCD 0x0000000A		 ; Number of bricks to start game with.
+BRICK_INCREMENT EQU 3				 ; Number of bricks to add after each level.
+	
+time_left DCD 120					 ; Time left in the game.
 	
 bomb_placed		DCD 0x00000000       ; Has a bomb been placed?
 bomb_detonated	DCD 0x00000000       ; Has the placed bomb been detonated?
@@ -76,33 +78,33 @@ bomb_y_pos		DCD 0x00000000       ; Placed bomb y-position.
 bomberman_x_pos	DCD 0x00000001       ; Bomberman's current x-position.
 bomberman_y_pos DCD 0x00000001       ; Bomberman's current y-position.
 
-enemy1_x_pos	DCD 0x00000017
-enemy1_y_pos	DCD 0x00000001
-enemy1_killed	DCD 0x00000000
+enemy1_x_pos	DCD 0x00000017		 ; Enemy #1's current x-position.
+enemy1_y_pos	DCD 0x00000001		 ; Enemy #1's current y-position.
+enemy1_killed	DCD 0x00000000		 ; Is enemy #1 killed?
 
-enemy2_x_pos	DCD 0x00000001
-enemy2_y_pos	DCD 0x0000000B
-enemy2_killed	DCD 0x00000000
+enemy2_x_pos	DCD 0x00000001		 ; Enemy #2's current x-position.
+enemy2_y_pos	DCD 0x0000000B		 ; Enemy #2's current y-position.
+enemy2_killed	DCD 0x00000000		 ; Is enemy #2 killed?
 
-enemy3_x_pos	DCD 0x00000017
-enemy3_y_pos	DCD 0x0000000B
-enemy3_killed	DCD 0x00000000
+enemy3_x_pos	DCD 0x00000017		 ; Enemy #3's current x-position.
+enemy3_y_pos	DCD 0x0000000B		 ; Enemy #3's current y-position.
+enemy3_killed	DCD 0x00000000		 ; Is enemy #3 killed?
 
 enemy_slow_moved DCD 0x00000000		 ; Did the slow enemies move last frame?
 
-num_enemies		DCD 0x00000003
+num_enemies		DCD 0x00000003		 ; Number of enemies. Initialized to 3.
 
-num_lives		DCD 0x00000003
+num_lives		DCD 0x00000003		 ; Number of lives Bomberman has. Initialized to 3.
 	
-life_lost_flag	DCD 0x00000000
+life_lost_flag	DCD 0x00000000		 ; Did Bomberman lose a life last frame?
 
-level			DCD 0x00000001
+level			DCD 0x00000001		 ; Current level. Initialized to 1.
 
-score			DCD 0x00000000
+score			DCD 0x00000000		 ; Current score.
 
-game_over		DCD 0x00000000
+game_over		DCD 0x00000000		 ; Is the game over?
 
-keystroke		DCD 0x00000000
+keystroke		DCD 0x00000000		 ; Player's keystroke.
 
 board_clean = "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZZZZZZZZZZZZZZZZZZZZZZZZZ",0
 board 		= "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZZZZZZZZZZZZZZZZZZZZZZZZZ",0
@@ -1146,17 +1148,6 @@ valid_move
 	
 not_valid_move
 	LDMFD sp!, {lr, v1-v6}
-	BX lr
-
-;-------------------------------------------------------;
-; @NAME                                                 ;
-; return                                                ;
-;                                                       ;
-; @DESCRIPTION                                          ;
-; Pop r14 off the stack and restore program counter.    ;
-;-------------------------------------------------------;
-return
-	LDMFD sp!, {lr}
 	BX lr
 
 ;--------------------------------------------------------;
