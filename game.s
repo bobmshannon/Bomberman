@@ -14,7 +14,6 @@
 	EXPORT life_lost_flag
 	EXPORT clear_board
 	EXPORT score
-	EXPORT time
 	
 	EXTERN game_loop
 	EXTERN T0MR0
@@ -99,8 +98,6 @@ game_over_flag	DCD 0x00000000
 life_lost_flag	DCD 0x00000000
 
 level			DCD 0x00000001
-
-time			DCD 0x00000000
 
 score			DCD 0x00000000
 

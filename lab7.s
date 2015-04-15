@@ -4,6 +4,7 @@
 	EXPORT FIQ_Handler
 	EXPORT game_loop
 	EXPORT T0MR0
+	EXPORT time_left
 		
 	EXTERN draw
 	EXTERN draw_changes
@@ -30,17 +31,25 @@ T0TC	EQU 0xE0004008	; Timer 0 Timer Count
 T0MCR	EQU 0xE0004014	; Timer 0 Match Control Register
 T0MR0	EQU 0xE0004018	; Timer 0 Match Register 0
 T0MR	EQU 0xE0004018	; Timer 0 Match Register 0
+
+T1IR	EQU 0xE0008000	; Timer 1 Interrupt Register
+T1TCR	EQU 0xE0008004	; Timer 1 Timer Control Register
+T1TC	EQU 0xE0008008	; Timer 1 Timer Count
+T1MCR	EQU 0xE0008014	; Timer 1 Match Control Register
+T1MR0	EQU 0xE0008018	; Timer 1 Match Register 0
+T1MR	EQU 0xE0008018	; Timer 1 Match Register 0
 	
 PAUSE_KEY EQU 'p'
 	
 refresh_timer_fired DCD 0x00000000
 is_paused DCD 0x00000000
+time_left DCD 120
 
 	ALIGN
 		
 ;intro_message = "Update this message!\n\rPress <SPACE> to begin game",0
 hide_cursor = "\x1B[?25l", 0
-game_title = "Bomberman", 0
+game_title = "       Bomberman", 0
 game_over_message = "Game Over!", 0
 paused_message = "PAUSED", 0
 title = "\n\r|-----------------------------------------------------------------------------------------------------------------------| \n\r|  __________   ___________  __       __  __________   ___________  ___________  __       __  ___________  __        _  | \n\r| ¦¦¦¦¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦     ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦     ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦      ¦¦¦ | \n\r| ¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦¦¦   ¦¦¦¦¦¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦¯¯¯¯¯¯¯¯¯ ¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦¦¦   ¦¦¦¦¦¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦¦¦     ¦¦¦ | \n\r| ¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦¦¦¦       ¦¦¦¦¦¦          ¦¦¦       ¦¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦¦¦¦       ¦¦¦¦¦¦¦¦¦    ¦¦¦ | \n\r| ¦¦¦_______¦¦¦¦¦¦       ¦¦¦¦¦¦ ¦¦¦¦¦ ¦¦¦¦¦¦_______¦¦¦¦¦¦_________ ¦¦¦_______¦¦¦¦¦¦ ¦¦¦¦¦ ¦¦¦¦¦¦_______¦¦¦¦¦¦ ¦¦¦   ¦¦¦ | \n\r| ¦¦¦¦¦¦¦¦¦¦¦¦ ¦¦¦       ¦¦¦¦¦¦  ¦¦¦  ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦  ¦¦¦  ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦  ¦¦¦  ¦¦¦ | \n\r| ¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦       ¦¦¦¦¦¦   ¯   ¦¦¦¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦¯¯¯¯¯¯¯¯¯ ¦¦¦¯¯¯¯¦¦¦¯¯ ¦¦¦   ¯   ¦¦¦¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦   ¦¦¦ ¦¦¦ | \n\r| ¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦          ¦¦¦     ¦¦¦  ¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦    ¦¦¦¦¦¦ | \n\r| ¦¦¦_______¦¦¦¦¦¦_______¦¦¦¦¦¦       ¦¦¦¦¦¦_______¦¦¦¦¦¦_________ ¦¦¦      ¦¦¦ ¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦     ¦¦¦¦¦ | \n\r| ¦¦¦¦¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦       ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦      ¦¦¦¦ | \n\r|  ¯¯¯¯¯¯¯¯¯¯   ¯¯¯¯¯¯¯¯¯¯¯  ¯         ¯  ¯¯¯¯¯¯¯¯¯¯   ¯¯¯¯¯¯¯¯¯¯¯  ¯         ¯  ¯         ¯  ¯         ¯  ¯        ¯¯  | \n\r|-----------------------------------------------------------------------------------------------------------------------|", 0
@@ -87,8 +96,12 @@ info_loop
 
 	BL initialize_game
 	
-	;Start the timer.  Let the games begin!
+	;Start the timers.  Let the games begin!
 	LDR a1, =T0TCR
+	MOV a2, #1
+	STR a2, [a1]
+
+	LDR a1, =T1TCR
 	MOV a2, #1
 	STR a2, [a1]
 	
@@ -148,8 +161,8 @@ interrupt_init
 	; Classify sources as IRQ or FIQ
 	LDR r0, =0xFFFFF000
 	LDR r1, [r0, #0xC]
-	LDR r2, =0x0050
-	ORR r1, r1, r2 ; UART0 FIQ, Timer0 FIQ
+	LDR r2, =0x0070
+	ORR r1, r1, r2 ; UART0 FIQ, Timer0 FIQ, Timer1 FIQ
 	STR r1, [r0, #0xC]
 
 	; UART0 Interrupt set-up for RX
@@ -161,8 +174,8 @@ interrupt_init
 	; Enable Interrupts
 	LDR r0, =0xFFFFF000
 	LDR r1, [r0, #0x10]
-	LDR r2, =0x0050
-	ORR r1, r1, r2 ; UART0 Enabled, Timer0 Enabled
+	LDR r2, =0x0070
+	ORR r1, r1, r2 ; UART0 Enabled, Timer0 Enabled, Timer1 Enabled
 	STR r1, [r0, #0x10]
 
 	; Enable FIQ's, Disable IRQ's
@@ -186,6 +199,16 @@ timer_init
 	;LDR r1, =0x1C2000       ;Set MR0 to 0.1 second intervals
 	;LDR r1, =0x1194538		; Set MR0 to 1s intervals
 	STR r1, [r0]
+
+	LDR r0, =T1MCR			;Init Match register 0
+	MOV r1, #3				;Interrupt and Reset on Match Register 0
+	STR r1, [r0]
+
+	LDR r0, =T1MR0
+	;LDR r1, =0x46514E		;Set MR0 to .25 second intervals
+	;LDR r1, =0x1C2000       ;Set MR0 to 0.1 second intervals
+	LDR r1, =0x1194538		; Set MR0 to 1s intervals
+	STR r1, [r0]
 	
 	LDMFD SP!, {r0-r3, lr}
 	BX lr
@@ -202,14 +225,35 @@ FIQ_Handler
 		CMP r0, #4
 		BEQ UART0INT
 
+		LDR r0, =T1IR		;Check if FIQ is caused by Timer1
+		LDR r0, [r0]
+		AND r0, r0, #1			; Isolate bit 0
+		CMP r0, #1
+		BEQ TIMER1INT
+
 ; ---------------------------------------------;		
-; Timer interrupt handler.                     ;
+; Timer0 interrupt handler.                     ;
 ; ---------------------------------------------;
 		LDR a1, =refresh_timer_fired
 		MOV a2, #1
 		STR a2, [a1]
 		
 		LDR a1, =T0IR				; Reset Match Register 0 interrupt flag
+	    MOV a2, #1	
+		STR a2, [a1]
+		
+		B FIQ_Exit
+
+; ---------------------------------------------;		
+; Timer1 interrupt handler.                     ;
+; ---------------------------------------------;
+TIMER1INT
+		LDR a1, =time_left	 		; Decrement timer by 1
+		LDR a2, [a1]
+		SUB a2, a2, #1
+		STR a2, [a1]
+		
+		LDR a1, =T1IR				; Reset Match Register 0 interrupt flag
 	    MOV a2, #1	
 		STR a2, [a1]
 		
