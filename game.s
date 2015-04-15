@@ -10,7 +10,7 @@
 	EXPORT prev_board
 	EXPORT initialize_game
 	EXPORT update_game
-	EXPORT game_over_flag
+	EXPORT game_over
 	EXPORT life_lost_flag
 	EXPORT clear_board
 	EXPORT score
@@ -92,8 +92,6 @@ enemy_slow_moved DCD 0x00000000		 ; Did the slow enemies move last frame?
 num_enemies		DCD 0x00000003
 
 num_lives		DCD 0x00000003
-	
-game_over_flag	DCD 0x00000000
 	
 life_lost_flag	DCD 0x00000000
 
@@ -1145,7 +1143,7 @@ kill_bomberman
 	STR a1, [a2]
 	
 	CMP a1, #0				; Do we have zero lives?
-	LDREQ a2, =game_over_flag
+	LDREQ a2, =game_over
 	MOVEQ a3, #1
 	STREQ a3, [a2]			; If so, set flag to indicate game over condition (cause a game over)
 	

@@ -19,7 +19,7 @@
 	EXTERN set_cursor_pos
 	EXTERN seed
 	EXTERN life_lost_flag
-	EXTERN game_over_flag
+	EXTERN game_over
 
 
 U0BASE  EQU 0xE000C000	; UART0 Base Address	
@@ -113,6 +113,15 @@ game_loop
 	LDR a1, =refresh_timer_fired		; Reset the refresh timer flag
 	MOV a2, #0
 	STR a2, [a1]
+
+	LDR a1, =game_over					; Check for game over condition
+	LDR a1, [v1]
+	CMP v1, #1
+	;BLEQ draw_game_over
+	CMP v1, #1
+	;BEQ restart_game					;
+
+
 	
 	LDR a1, =is_paused
 	LDR a1, [a1]
@@ -252,6 +261,11 @@ TIMER1INT
 		LDR a2, [a1]
 		SUB a2, a2, #1
 		STR a2, [a1]
+		
+		LDR a1, =game_over
+		CMP a2, #0					; Did we run out of time?
+		MOVEQ a2, #1
+		STREQ a2, [a1]				; Set game_over
 		
 		LDR a1, =T1IR				; Reset Match Register 0 interrupt flag
 	    MOV a2, #1	
