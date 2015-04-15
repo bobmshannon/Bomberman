@@ -108,9 +108,6 @@ info_loop
 	
 	LDR v1, =game_title
 	BL output_string
-
-restart_game
-	B restart_game
 	
 game_loop	
 	LDR a1, =refresh_timer_fired		; Reset the refresh timer flag
@@ -118,7 +115,7 @@ game_loop
 	STR a2, [a1]
 
 	LDR a1, =game_over					; Check for game over condition
-	LDR a1, [v1]
+	LDR v1, [a1]
 	CMP v1, #1
 	BLEQ draw_game_over
 	CMP v1, #1
@@ -163,6 +160,9 @@ resume_game
 exit
 	LDMFD sp!, {lr, r0-r4}
 	BX lr
+
+restart_game
+	B restart_game
 	
 ; ---------------------------------------------;
 ; Interrupt initialization code.               ;
