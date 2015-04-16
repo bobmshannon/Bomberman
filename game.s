@@ -1515,7 +1515,6 @@ try_place_brick
 	
 	MOV a3, #-1
 	MOV a4, #-2
-	
 	LDR a1, =bomberman_x_pos
 	LDR a1, [a1]
 	LDR a2, =bomberman_y_pos
@@ -1530,7 +1529,6 @@ try_place_brick
 	
 	MOV a3, #-1
 	MOV a4, #-2
-	
 	LDR a1, =bomberman_x_pos
 	LDR a1, [a1]
 	LDR a2, =bomberman_y_pos
@@ -1564,8 +1562,8 @@ try_place_brick
 	CMP v2, #2
 	MOVEQ a2, #1
 	CMP a1, a2
-	
 	BEQ try_place_brick
+	
 	MOV a1, #-1
 	MOV a2, #-2
 	CMP v1, #2
@@ -1593,6 +1591,7 @@ place_brick
 
 	LDMFD sp!, {v1-v4, lr}
 	BX lr
+	LTORG
 	
 ;-------------------------------------------------------;
 ; @NAME                                                 ;
