@@ -124,6 +124,8 @@ info_loop
 	LDR v1, =game_title
 	BL output_string
 	
+	BL draw								; Draw initial game board.
+	
 game_loop	
 	LDR a1, =refresh_timer_fired		; Reset the refresh timer flag
 	MOV a2, #0
@@ -151,7 +153,7 @@ game_loop
 	BLEQ pause_game						; Go to pause game loop.
 	
 	BL update_game						; Update game simulation
-	BL draw								; Draw current state of game simulation
+	BL draw_changes						; Draw current state of game simulation
 	
 	LDR a1, =life_lost_flag				; Check if we lost a life last refresh
 	LDR a1, [a1]

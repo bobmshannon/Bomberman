@@ -9,6 +9,7 @@
 	EXTERN output_string
 	EXTERN time_left
 	EXTERN is_paused
+	EXTERN div_and_mod
 		
 	EXPORT draw
 	EXPORT draw_changes
@@ -50,6 +51,11 @@ draw
 	BL draw_time
 
 	BL draw_board
+	
+	LDR v1, =board						; Copy current board state into prev_board.
+	LDR v2, =prev_board
+	BL strcpy
+	
 	LDMFD sp!, {lr}
 	BX lr
 	
@@ -155,66 +161,94 @@ draw_board_loop
 ; is a faster alternative to draw.                      ;
 ;-------------------------------------------------------;
 draw_changes
-	STMFD sp!, {lr}
-	BL draw_board_changes
-	LDMFD sp!, {lr}
-	BX lr
-
-draw_board_changes
-	STMFD sp!, {a1-a2, v1-v3, lr}
+	STMFD sp!, {lr, v1-v4}
 	
-	MOV v1, #0				; row_counter = 0
-	MOV v2, #0				; column_counter = 0;
-	
-	MOV a1, #BOARD_X_OFFSET
-	MOV a2, #BOARD_Y_OFFSET
-	BL set_cursor_pos		; Set cursor position to (0,3).
-
-	LDR v3, =board			; Load base address of board array.
-	LDR v4, =prev_board     ; Load base address of prev_board array.
+	LDR v1, =board
+	LDR v2, =prev_board
+	MOV v3, #0							; Position counter.
 	
 draw_changes_loop
-	LDRB a1, [v3]
-	LDRB a2, [v4]
+	LDRB a1, [v1]						; Load character at current position from current game board into a1.
+	LDRB a2, [v2]						; Load character at current position from previous game board into a2.
 	
-	CMP a1, a2
-	BLNE draw_change        ; Has this position changed since last refresh? If so,
-	                        ; print it.
+	CMP a1, #0
+	BEQ draw_changes_exit				; Is the character a NULL? If so, stop.
 	
-	STRB a1, [v4]           ; Save a copy of current board state into prev_board.
+	CMP a1, a2							; Are they different? If so, draw the change.
+	MOVNE a1, a1						; Pass in the new character to draw
+	MOVNE a2, v3						; Pass in current value of position counter.
+	BLNE draw_change
 	
-	ADD v3, v3, #1			; board += 1
-	ADD v2, v2, #1			; column_counter +=1
-	CMP v2, #BOARD_WIDTH	; Does column_counter == board width?
-	BNE draw_changes_loop	; If not, continue printing the row.
+	ADD v3, v3, #1						; Increment position counter.
+	ADD v1, v1, #1
+	ADD v2, v2, #1
+	B draw_changes_loop
+
 	
-	MOV v2, #0				; column_counter = 0
-	ADD v1, v1, #1			; row_counter += 1
+draw_changes_exit
+	LDR v1, =board						; Copy current board state into prev_board.
+	LDR v2, =prev_board
+	BL strcpy
 	
-	MOV a1, v2
-	MOV a2, v1
-	BL set_cursor_pos
-	MOV a1, #'\n'			; We're ready to print the next row.
-	BL output_character		; Print a newline and carriage return.
-	MOV a1, #'\r'
-	BL output_character
-	
-	CMP v1, #BOARD_HEIGHT	; Does row_counter == board height?
-	BNE draw_changes_loop	; If not, we need to print the next row.
-	
-	LDMFD sp!, {a1-a2, v1-v3, lr}
+	LDMFD sp!, {lr, v1-v4}
 	BX lr
 	
 draw_change
-    STMFD sp!, {lr}
+	STMFD sp!, {lr, v1-v4}
+		; Character to draw is passed in a1
+		; The value of the position counter is passed in a2.
+		; Goal: overwrite position with character passed in a1.
+		MOV v1, a1
+		MOV v2, a2
+		MOV v3, #0			; X-position (relative to top left corner of board)
+		MOV v4, #0			; Y-position (relative to top left corner of board).
+		MOV a3, #0
+		MOV a4, #0
+		
+calculate_pos
+	MOV a1, a2
+	MOV a2, #25
+	BL div_and_mod
+	MOV v4, a1				; Y-position = divedend
+	MOV v3, a2				; X-position = remainder
+	ADD v4, v4, #BOARD_Y_OFFSET
+	ADD v3, v3, #BOARD_X_OFFSET
 	
-	MOV a3, a1
-	MOV a1, v2
-	MOV a2, v1
+	MOV a1, v3
+	MOV a2, v4
 	BL set_cursor_pos
-	MOV a1, a3
+	MOV a1, v1
 	BL output_character
 	
+
+	
+
+	LDMFD sp!, {lr, v1-v4}
+	BX lr
+
+;-------------------------------------------------------;
+; @NAME                                                 ;
+; strcpy                                                ;
+;                                                       ;
+; @DESCRIPTION                                          ;
+; Copy null terminated string into another. The address ;
+; of the string to copy is passed in v1. The desination ;
+; address is passed in v2. No return.                   ;
+;-------------------------------------------------------;
+strcpy
+    STMFD sp!, {lr}
+
+strcpy_loop
+
+	LDRB a1, [v1]
+	CMP a1, #0
+	BEQ strcpy_exit
+	STRB a1, [v2]
+	ADD v1, v1, #1
+	ADD v2, v2, #1
+	B strcpy_loop
+	
+strcpy_exit
 	LDMFD sp!, {lr}
 	BX lr
 	END
