@@ -150,12 +150,16 @@ reset_game
 	STR a2, [a1]					; Reset initial number of bricks back to 10.
 
 	LDR a1, =num_lives
-	MOV a2, #3
-	STR a2, [a1]					; Reset number of bomberman lives back to 3.
+	MOV a2, #4
+	STR a2, [a1]					; Reset number of bomberman lives back to 4.
 	
 	LDR a1, =blink_timer
 	MOV a2, #0xFFFFFFFF
 	STR a2, [a1]					; Reset blink timer to negative value.
+
+	LDR a1, =time_left
+	MOV a2, #120
+	STR a2, [a1]					; Reset game timer
 	
 	LDMFD sp!, {lr}
 	BX lr

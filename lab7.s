@@ -140,9 +140,6 @@ game_loop
 	CMP v1, #1
 	BLEQ draw_game_over					; Draw the game over screen.
 	
-	CMP v1, #1
-	BLEQ reset_game						; Reset the game parameters.
-	
 	CMP v1, #1 
 	BEQ end_screen						; Jump to the ending screen loop (which will prompt the user if he or she wants to play again.)
 	
@@ -201,6 +198,7 @@ resume_game
 	BX lr
 	
 end_screen
+	BL sync_hardware
 	MOV a1, #0							; Init counter to create seed value
 	LDR a2, =keystroke
 end_screen_loop
@@ -215,6 +213,7 @@ end_screen_loop
 	MOV a1, #'\f'	 					; Clear the screen to display the game
 	BL output_character
 
+	BL reset_game						; Reset the game parameters.
 	BL initialize_game
 	B game_loop
 	
@@ -242,6 +241,8 @@ sync_hardware
 	MOVEQ a1, #0x3		; 2 lives = 2 lights
 	CMP a2, #1
 	MOVEQ a1, #0x1		; 1 lives = 1 lights
+	CMP a2, #0
+	MOVEQ a1, #0x0		; 0 lives = 0 lights
 	BL leds
 	
 	LDR a2, =game_active	; Is the game active? Illuminate the RGB to GREEN.
