@@ -1556,6 +1556,25 @@ try_place_brick
 	BL div_and_mod
 	MOV v2, a2
 	
+	
+	MOV a1, #-1				; We can't generate bricks right next to bomberman, otherwise he will be trapped.
+	MOV a2, #-2
+	CMP v1, #1
+	MOVEQ a1, #1
+	CMP v2, #2
+	MOVEQ a2, #1
+	CMP a1, a2
+	
+	BEQ try_place_brick
+	MOV a1, #-1
+	MOV a2, #-2
+	CMP v1, #2
+	MOVEQ a1, #1
+	CMP v2, #1
+	MOVEQ a2, #1
+	CMP a1, a2
+	BEQ try_place_brick
+	
 	MOV a1, v1              ; Check if the randomly generated X-Y
 	MOV a2, v2              ; pair is a free spot on the board.
 	BL check_pos
