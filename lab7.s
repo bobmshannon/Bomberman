@@ -164,6 +164,9 @@ wait
 	CMP a1, #1
 	BNE wait
 	
+	LDR v1, =game_title
+	BL output_string					; Re-draw game title.
+	
 	B game_loop
 	
 pause_game
@@ -215,6 +218,7 @@ end_screen_loop
 
 	BL reset_game						; Reset the game parameters.
 	BL initialize_game
+
 	B game_loop
 	
 sync_hardware
