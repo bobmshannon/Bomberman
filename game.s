@@ -78,7 +78,7 @@ time_left DCD 120					 ; Time left in the game.
 
 bomb_placed		DCD 0x00000000       ; Has a bomb been placed?
 bomb_detonated	DCD 0x00000000       ; Has the placed bomb been detonated?
-blink_timer		DCD 0x00000000		 ; Counter for blinking LED.
+blink_timer		DCD 0xFFFFFFFF		 ; Counter for blinking LED.
 bomb_timer		DCD 0x00000000       ; Bomb detonation timer.
 bomb_radius		DCD 0x00000001       ; Bomb blast radius.
 bomb_x_pos		DCD 0x00000000       ; Placed bomb x-position.
@@ -152,6 +152,10 @@ reset_game
 	LDR a1, =num_lives
 	MOV a2, #3
 	STR a2, [a1]					; Reset number of bomberman lives back to 3.
+	
+	LDR a1, =blink_timer
+	MOV a2, #0xFFFFFFFF
+	STR a2, [a1]					; Reset blink timer to negative value.
 	
 	LDMFD sp!, {lr}
 	BX lr
