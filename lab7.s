@@ -248,19 +248,20 @@ sync_hardware
 	LDR a3, [a2]
 	CMP a3, #1
 	MOVEQ a1, #1
-	;BLEQ rgb_led
+	BLEQ rgb_led
 	
 	LDR a2, =game_active 
 	LDR a3, [a2]
 	CMP a3, #0
 	MOVEQ a1, #2
-	;BLEQ rgb_led
+	BLEQ rgb_led
 
 	LDR a2, =game_over
 	LDR a3, [a2]
 	CMP a3, #1
 	MOVEQ a1, #3
-	;BLEQ rgb_led
+	BLEQ rgb_led
+	BEQ sync_hardware_exit
 	
 	LDR a2, =blink_timer
 	LDR a3, [a2]
@@ -269,15 +270,10 @@ sync_hardware
 	AND a3, a3, #1					; Check if blink timer is even or odd (a2 % 2).
 	CMP a3, #0						; Is the blink timer ODD?
 	MOVNE a1, #0
-	;BLNE rgb_led
+	BLNE rgb_led
 	CMP a3, #0						; Is the blink timer EVEN?
 	MOVEQ a1, #6
-	;BLEQ rgb_led
-		
-	BL rgb_led
-
-	
-									; Modulo rule: (X % 2^n) == X & (2^n - 1).
+	BLEQ rgb_led
 	
 	;**********************************************************************************************************;
 	; Insert code which updates RGB LED according to current game status here.
