@@ -244,34 +244,34 @@ sync_hardware
 	MOVEQ a1, #0x1		; 1 lives = 1 lights
 	BL leds
 	
-	LDR a1, =game_active	; Is the game active? Illuminate the RGB to GREEN.
-	LDR a1, [a1]
-	CMP a1, #1
+	LDR a2, =game_active	; Is the game active? Illuminate the RGB to GREEN.
+	LDR a3, [a2]
+	CMP a3, #1
 	MOVEQ a1, #1
 	;BLEQ rgb_led
 	
-	LDR a1, =game_active 
-	LDR a1, [a1]
-	CMP a1, #0
+	LDR a2, =game_active 
+	LDR a3, [a2]
+	CMP a3, #0
 	MOVEQ a1, #2
 	;BLEQ rgb_led
 
-	LDR a1, =game_over
-	LDR a1, [a1]
-	CMP a1, #1
+	LDR a2, =game_over
+	LDR a3, [a2]
+	CMP a3, #1
 	MOVEQ a1, #3
 	;BLEQ rgb_led
 	
-	LDR a1, =blink_timer
-	LDR a2, [a1]
-	CMP a2, #0
+	LDR a2, =blink_timer
+	LDR a3, [a2]
+	CMP a3, #0
 	BLT sync_hardware_exit			; Is the timer less than zero? If so, do nothing.
-	AND a2, a2, #1					; Check if blink timer is even or odd (a2 % 2).
-	CMP a2, #0						; Is the blink timer ODD?
+	AND a3, a3, #1					; Check if blink timer is even or odd (a2 % 2).
+	CMP a3, #0						; Is the blink timer ODD?
 	MOVNE a1, #0
 	;BLNE rgb_led
-	CMP a2, #0						; Is the blink timer EVEN?
-	MOVEQ a1, #0
+	CMP a3, #0						; Is the blink timer EVEN?
+	MOVEQ a1, #6
 	;BLEQ rgb_led
 		
 	BL rgb_led
