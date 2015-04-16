@@ -164,6 +164,9 @@ wait
 	CMP a1, #1
 	BNE wait
 	
+	MOV a1, #0
+	MOV a2, #0
+	BL set_cursor_pos
 	LDR v1, =game_title
 	BL output_string					; Re-draw game title.
 	
