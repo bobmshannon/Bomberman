@@ -258,6 +258,12 @@ interrupt_init
 	; interrupt here (or above on line 248).
 	;***********************************************;
 
+	; External Interrupt 1 setup for edge sensitive
+	LDR r0, =0xE01FC148
+	LDR r1, [r0]
+	ORR r1, r1, #2  ; EINT1 = Edge Sensitive
+	STR r1, [r0]
+		
 	; UART0 Interrupt set-up for RX
 	LDR r0, =U0IER
 	LDR r1, [r0]
@@ -267,8 +273,8 @@ interrupt_init
 	; Enable Interrupts
 	LDR r0, =0xFFFFF000
 	LDR r1, [r0, #0x10]
-	LDR r2, =0x0070
-	ORR r1, r1, r2 						; UART0 Enabled, Timer0 Enabled, Timer1 Enabled
+	LDR r2, =0x8070
+	ORR r1, r1, r2 						; UART0 Enabled, Timer0 Enabled, Timer1 Enabled, EINT1 Enabled
 	STR r1, [r0, #0x10]
 
 	; Enable FIQ's, Disable IRQ's
@@ -323,9 +329,15 @@ FIQ_Handler
 		AND r0, r0, #1					; Isolate bit 0
 		CMP r0, #1
 		BEQ TIMER1INT
+		
+		LDR r0, =0xE01FC140				; Check External Interrupt Flag Register for Push Button Input
+		LDR r0, [r0]
+		AND r0, #0x00000002
+		CMP r0, #2
+		BEQ EINT1
 
 ; ---------------------------------------------;		
-; Timer0 interrupt handler.                     ;
+; Timer0 interrupt handler.                    ;
 ; ---------------------------------------------;
 		LDR a1, =refresh_timer_fired
 		MOV a2, #1
@@ -338,7 +350,7 @@ FIQ_Handler
 		B FIQ_Exit
 
 ; ---------------------------------------------;		
-; Timer1 interrupt handler.                     ;
+; Timer1 interrupt handler.                    ;
 ; ---------------------------------------------;
 TIMER1INT
 		LDR a1, =time_left	 			; Decrement timer by 1
@@ -367,14 +379,20 @@ UART0INT
 		
 		STR r2, [r0]					; Store user keystroke.
 		
+		B FIQ_Exit
+		
 ; ---------------------------------------------;
-; Interrupt handler code.                      ;
+; Push Button Interrupt handler code.          ;
 ; ---------------------------------------------;
-push_btn_int
+EINT1
 
 		; Toggle is_paused flag.
 		; If is_paused == 0 then is_paused = 1
 		; Else if is_paused == 1 then is_paused = 0
+		
+		LDR a1, =0xE01FC140				; Reset EINT1 interrupt flag
+		MOV a2, #2
+		STR a2, [a1]
 		
 		B FIQ_Exit
 
