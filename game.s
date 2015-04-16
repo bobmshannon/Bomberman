@@ -365,7 +365,10 @@ detonate_bomb
 	
 	LDR a1, =blink_timer
 	MOV a2, #BLINK_REFRESHES	 ; Number of refreshes RGB LED indicating an explosion should blink for.
-	STR a2, [a1]
+	LDR a3, =bomb_placed
+	LDR a3, [a3]
+	CMP a3, #1
+	STREQ a2, [a1]
 	
 	LDR a1, =bomb_placed
 	LDR a1, [a1]
