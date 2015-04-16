@@ -176,6 +176,11 @@ pause_game
 	STR a2, [a1]
 	BL sync_hardware					; Re-sync hardware to reflect paused game state.
 	
+	LDR a1, =T1TCR
+	LDR a2, [a1]
+	AND a2, a2, #0xFFFFFFF7				; Clear bit #0 and disable the game countdown timer.
+	STR a1, [a2]
+	
 pause_loop
 	LDR a1, =is_paused
 	LDR a1, [a1]
@@ -186,6 +191,11 @@ resume_game
 	LDR a1, =game_active
 	MOV a2, #1
 	STR a2, [a1]						; Assert game_active flag.
+	
+	LDR a1, =T1TCR
+	LDR a2, [a1]
+	ORR a2, a2, #1				        ; Set bit #0 and enable the game countdown timer.
+	STR a1, [a2]
 	
 	LDMFD sp!, {lr}
 	BX lr
