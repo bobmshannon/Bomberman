@@ -33,6 +33,7 @@
 	EXTERN game_active
 	EXTERN blink_timer
 	EXTERN rgb_led
+	EXTERN leds
 
 
 U0BASE  EQU 0xE000C000				; UART0 Base Address	
@@ -219,7 +220,19 @@ sync_hardware
 	; Insert code which update's LED's according to number of lives left here. Can simply do a switch statement
 	; and hard code each possible scenario in -- there are only 4 of them, i.e. num_lives = {0, 1, 2, 3}.
 	;**********************************************************************************************************;
+	LDR a2, =num_lives
+	LDR a2, [a2]		;Load the number of lives left
 
+	CMP a2, #4
+	MOVEQ a1, #0xF		; 4 lives = 4 lights
+	CMP a2, #3
+	MOVEQ a1, #0x7		; 3 lives = 3 lights
+	CMP a2, #2
+	MOVEQ a1, #0x3		; 2 lives = 2 lights
+	CMP a2, #1
+	MOVEQ a1, #0x1		; 1 lives = 1 lights
+
+	BL leds
 	;**********************************************************************************************************;
 	; Insert code which updates RGB LED according to current game status here.
 	; If game_active == 1 then RGB = GREEN

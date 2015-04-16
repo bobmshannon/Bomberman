@@ -103,7 +103,7 @@ enemy_slow_moved DCD 0x00000000		 ; Did the slow enemies move last frame?
 
 num_enemies		DCD 0x00000003		 ; Number of enemies. Initialized to 3.
 
-num_lives		DCD 0x00000003		 ; Number of lives Bomberman has. Initialized to 3.
+num_lives		DCD 0x00000004		 ; Number of lives Bomberman has. Initialized to 3.
 	
 life_lost_flag	DCD 0x00000000		 ; Did Bomberman lose a life last frame?
 
@@ -318,7 +318,7 @@ update_game
 	CMP a1, #1
 	BEQ update_game_exit
 	
-	;BL move_enemies				 ; Move all enemies
+	BL move_enemies				 ; Move all enemies
 
 	LDR a1, =keystroke
 	LDR a1, [a1]
