@@ -174,6 +174,7 @@ pause_game
 	LDR a1, =game_active				; De-assert game_active flag.
 	MOV a2, #0
 	STR a2, [a1]
+	BL sync_hardware					; Re-sync hardware to reflect paused game state.
 	
 pause_loop
 	LDR a1, =is_paused
@@ -274,7 +275,7 @@ interrupt_init
 	; Classify sources as IRQ or FIQ
 	LDR r0, =0xFFFFF000
 	LDR r1, [r0, #0xC]
-	LDR r2, =0x0070
+	LDR r2, =0x8070
 	ORR r1, r1, r2 						; UART0 FIQ, Timer0 FIQ, Timer1 FIQ
 	STR r1, [r0, #0xC]
 
