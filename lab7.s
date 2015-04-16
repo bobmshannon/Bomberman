@@ -262,6 +262,20 @@ sync_hardware
 	MOVEQ a1, #3
 	BLEQ rgb_led
 	
+	LDR a1, =blink_timer
+	LDR a2, [a1]
+	CMP a2, #0
+	BLT sync_hardware_exit			; Is the timer less than zero? If so, do nothing.
+	AND a2, a2, #1					; Check if blink timer is even or odd (a2 % 2).
+	CMP a2, #0						; Is the blink timer ODD?
+	MOVNE a1, #0
+	BLNE rgb_led
+	CMP a2, #0						; Is the blink timer EVEN?
+	MOVEQ a1, #0
+	BLEQ rgb_led
+	
+									; Modulo rule: (X % 2^n) == X & (2^n - 1).
+	
 	;**********************************************************************************************************;
 	; Insert code which updates RGB LED according to current game status here.
 	; If game_active == 1 then RGB = GREEN
@@ -274,7 +288,7 @@ sync_hardware
 	; the LED should be BLUE.)
 	; The case where the LED should be WHITE is handled before the game loop is first entered.
 	;**********************************************************************************************************;
-	
+sync_hardware_exit	
 	LDMFD sp!, {lr}
 	BX lr
 	
