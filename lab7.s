@@ -231,13 +231,20 @@ sync_hardware
 	MOVEQ a1, #0x3		; 2 lives = 2 lights
 	CMP a2, #1
 	MOVEQ a1, #0x1		; 1 lives = 1 lights
-
 	BL leds
-	LDR a1, =game_active
+	
+	LDR a1, =game_active	; Is the game active? Illuminate the RGB to GREEN.
 	LDR a1, [a1]
 	CMP a1, #1
 	MOVEQ a1, #1
 	BLEQ rgb_led
+	
+	LDR a1, =game_active 
+	LDR a1, [a1]
+	CMP a1, #0
+	MOVEQ a1, #2
+	BLEQ rgb_led
+	
 	;**********************************************************************************************************;
 	; Insert code which updates RGB LED according to current game status here.
 	; If game_active == 1 then RGB = GREEN
@@ -407,6 +414,14 @@ EINT1
 		; Toggle is_paused flag.
 		; If is_paused == 0 then is_paused = 1
 		; Else if is_paused == 1 then is_paused = 0
+		
+		LDR a1, =is_paused
+		LDR a2, [a1]
+		CMP a2, #1
+		MOVEQ a2, #0
+		CMP a2, #0
+		MOVEQ a2, #1
+		STR a2, [a1]
 		
 		LDR a1, =0xE01FC140				; Reset EINT1 interrupt flag
 		MOV a2, #2
