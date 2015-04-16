@@ -350,9 +350,12 @@ update_game
 	STR a2, [a1]                 ; Increment bomb timer.
 	
 update_game_exit
-	LDR v1, =keystroke
-	MOV a1, #0                   ; Reset keystroke.
-	STR a1, [v1]
+	LDR a1, =enemy_slow_moved
+	LDR a1, [a1]
+   	CMP a1, #1
+	LDREQ v1, =keystroke
+	MOVEQ a1, #0                   ; Reset keystroke.
+	STREQ a1, [v1]
 	
 	LDMFD sp!, {lr}
 	BX lr
