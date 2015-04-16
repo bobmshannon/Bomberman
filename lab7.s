@@ -179,7 +179,7 @@ pause_game
 	LDR a1, =T1TCR
 	LDR a2, [a1]
 	AND a2, a2, #0xFFFFFFFE				; Clear bit #0 and disable the game countdown timer.
-	STR a1, [a2]
+	STR a2, [a1]
 	
 pause_loop
 	LDR a1, =is_paused
@@ -195,7 +195,7 @@ resume_game
 	LDR a1, =T1TCR
 	LDR a2, [a1]
 	ORR a2, a2, #1				        ; Set bit #0 and enable the game countdown timer.
-	STR a1, [a2]
+	STR a2, [a1]
 	
 	LDMFD sp!, {lr}
 	BX lr
