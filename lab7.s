@@ -174,6 +174,7 @@ pause_game
 	LDR a1, =game_active				; De-assert game_active flag.
 	MOV a2, #0
 	STR a2, [a1]
+	BL sync_hardware					; Re-sync hardware to reflect paused game state.
 	
 pause_loop
 	LDR a1, =is_paused
