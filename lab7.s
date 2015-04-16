@@ -248,19 +248,19 @@ sync_hardware
 	LDR a1, [a1]
 	CMP a1, #1
 	MOVEQ a1, #1
-	BLEQ rgb_led
+	;BLEQ rgb_led
 	
 	LDR a1, =game_active 
 	LDR a1, [a1]
 	CMP a1, #0
 	MOVEQ a1, #2
-	BLEQ rgb_led
+	;BLEQ rgb_led
 
 	LDR a1, =game_over
 	LDR a1, [a1]
 	CMP a1, #1
 	MOVEQ a1, #3
-	BLEQ rgb_led
+	;BLEQ rgb_led
 	
 	LDR a1, =blink_timer
 	LDR a2, [a1]
@@ -269,10 +269,13 @@ sync_hardware
 	AND a2, a2, #1					; Check if blink timer is even or odd (a2 % 2).
 	CMP a2, #0						; Is the blink timer ODD?
 	MOVNE a1, #0
-	BLNE rgb_led
+	;BLNE rgb_led
 	CMP a2, #0						; Is the blink timer EVEN?
 	MOVEQ a1, #0
-	BLEQ rgb_led
+	;BLEQ rgb_led
+		
+	BL rgb_led
+
 	
 									; Modulo rule: (X % 2^n) == X & (2^n - 1).
 	
