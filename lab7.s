@@ -4,6 +4,7 @@
 	EXPORT FIQ_Handler
 	EXPORT game_loop
 	EXPORT T0MR0
+	EXPORT is_paused
 
 	EXTERN draw
 	EXTERN draw_changes
@@ -15,6 +16,7 @@
 	EXTERN output_string
 	EXTERN output_character
 	EXTERN print_integer
+	EXTERN display_digit
 	EXTERN set_cursor_pos
 	EXTERN seed
 	EXTERN life_lost_flag
@@ -22,6 +24,14 @@
 	EXTERN draw_game_over
 	EXTERN reset_game
 	EXTERN time_left
+	EXTERN level
+	EXTERN calculate_bonus
+	EXTERN score
+	EXTERN num_lives
+	EXTERN draw_paused
+	EXTERN bomb_detonated
+	EXTERN game_active
+	EXTERN blink_timer
 
 
 U0BASE  EQU 0xE000C000				; UART0 Base Address	
@@ -77,8 +87,15 @@ lab7
 	LDR v1, =enter_to_play
 	BL output_string
 	
+	MOV a1, #0
+	BL display_digit					; Illuminate '0' on 7 segment display before game begins.
+	
 	MOV a1, #0							; Init counter to create seed value
 	LDR a2, =keystroke
+	
+	;************************************************************;
+	; Insert code which illuminates RGB LED to WHITE here.
+	;************************************************************;
 	
 info_loop
 	ADD a1, a1, #1
@@ -110,25 +127,35 @@ game_loop
 	LDR a1, =refresh_timer_fired		; Reset the refresh timer flag
 	MOV a2, #0
 	STR a2, [a1]
+	
+	BL sync_hardware					; Sync hardware perhipherals with current game simulation state (lives left, current level, game status, etc.)
 
 	LDR a1, =game_over					; Check for game over condition
 	LDR v1, [a1]
+	
 	CMP v1, #1
-	BLEQ draw_game_over
+	BLEQ calculate_bonus				; Calculate bonus points to award to player if game is over.
+	
 	CMP v1, #1
-	BLEQ reset_game	
+	BLEQ draw_game_over					; Draw the game over screen.
+	
+	CMP v1, #1
+	BLEQ reset_game						; Reset the game parameters.
+	
 	CMP v1, #1 
-	BEQ end_screen
+	BEQ end_screen						; Jump to the ending screen loop (which will prompt the user if he or she wants to play again.)
 	
-	LDR a1, =is_paused
+	LDR a1, =is_paused					
 	LDR a1, [a1]
+	CMP a1, #1							; Is the game paused? If so, go to the pause_game loop.
+	BLEQ draw_paused					; Update game board to indicate game is paused
 	CMP a1, #1
-	BLEQ pause_game
+	BLEQ pause_game						; Go to pause game loop.
 	
-	BL update_game						; Update game logic
-	BL draw								; Draw board state
+	BL update_game						; Update game simulation
+	BL draw								; Draw current state of game simulation
 	
-	LDR a1, =life_lost_flag				; Check if we lost a life last tick
+	LDR a1, =life_lost_flag				; Check if we lost a life last refresh
 	LDR a1, [a1]
 	CMP a1, #1
 	BLEQ initialize_game				; If we did, reset the game state
@@ -143,6 +170,9 @@ wait
 	
 pause_game
 	STMFD sp!, {lr}
+	LDR a1, =game_active				; De-assert game_active flag.
+	MOV a2, #0
+	STR a2, [a1]
 	
 pause_loop
 	LDR a1, =is_paused
@@ -151,6 +181,10 @@ pause_loop
 	BEQ pause_loop
 	
 resume_game
+	LDR a1, =game_active
+	MOV a2, #1
+	STR a2, [a1]						; Assert game_active flag.
+	
 	LDMFD sp!, {lr}
 	BX lr
 	
@@ -172,6 +206,36 @@ end_screen_loop
 	BL initialize_game
 	B game_loop
 	
+sync_hardware
+	STMFD sp!, {lr}
+	
+	LDR a1, =level
+	LDR a1, [a1]
+	BL display_digit					; Update 7 segment display to illuminate current level number. 
+										; The case where the 7 segment should illuminate '0' is handled
+										; before the game loop is first entered.
+	
+	;**********************************************************************************************************;
+	; Insert code which update's LED's according to number of lives left here. Can simply do a switch statement
+	; and hard code each possible scenario in -- there are only 4 of them, i.e. num_lives = {0, 1, 2, 3}.
+	;**********************************************************************************************************;
+
+	;**********************************************************************************************************;
+	; Insert code which updates RGB LED according to current game status here.
+	; If game_active == 1 then RGB = GREEN
+	; If game_active == 0 then RGB == WHITE
+	; If is_paused == 1 then RGB == BLUE
+	; If blink_timer % 2 == 0 && blink_timer >= 0 then RGB == RED
+	; If blink_timer % 2 != 0 && blink_timer >= 0 then RGB == OFF
+	;
+	; NOTE: the order of the above IF statements DO matter! (for example: when game_active == 0 && is_paused == 1
+	; the LED should be BLUE.)
+	; The case where the LED should be WHITE is handled before the game loop is first entered.
+	;**********************************************************************************************************;
+	
+	LDMFD sp!, {lr}
+	BX lr
+	
 exit
 	LDMFD sp!, {lr, r0-r4}
 	BX lr
@@ -188,6 +252,11 @@ interrupt_init
 	LDR r2, =0x0070
 	ORR r1, r1, r2 						; UART0 FIQ, Timer0 FIQ, Timer1 FIQ
 	STR r1, [r0, #0xC]
+
+	;***********************************************;
+	; Insert code which initializes the push button
+	; interrupt here (or above on line 248).
+	;***********************************************;
 
 	; UART0 Interrupt set-up for RX
 	LDR r0, =U0IER
@@ -297,6 +366,15 @@ UART0INT
 		LDR r2, [r1]
 		
 		STR r2, [r0]					; Store user keystroke.
+		
+; ---------------------------------------------;
+; Interrupt handler code.                      ;
+; ---------------------------------------------;
+push_btn_int
+
+		; Toggle is_paused flag.
+		; If is_paused == 0 then is_paused = 1
+		; Else if is_paused == 1 then is_paused = 0
 		
 		B FIQ_Exit
 

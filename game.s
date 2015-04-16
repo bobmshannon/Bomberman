@@ -16,6 +16,12 @@
 	EXPORT reset_game
 	EXPORT score
 	EXPORT time_left
+	EXPORT level
+	EXPORT calculate_bonus
+	EXPORT num_lives
+	EXPORT bomb_detonated
+	EXPORT game_active
+	EXPORT blink_timer
 	
 	EXTERN game_loop
 	EXTERN T0MR0
@@ -43,7 +49,7 @@ MOVE_LEFT 		 EQU 4
 	
 ENEMY_MULTIPLIER     EQU 10			 ; Score multiplier when enemy is killed (score += level * multiplier)
 LEVEL_CLEARED_BONUS  EQU 100		 ; Score bonus when level is completed (score += 100)
-LIFE_REMAININING_BONUS EQU 25		 ; Score bonus awarded for each life remaining when game is over (score += num_lives * life_remaining_bonus)
+LIFE_REMAINING_BONUS EQU 25		 ; Score bonus awarded for each life remaining when game is over (score += num_lives * life_remaining_bonus)
 	
 MAX_LEVEL        EQU 5               ; Maximum level user can reach. After the player passes this level,
 								     ; the game no longer increases in speed.
@@ -62,14 +68,17 @@ ENEMY3_Y_START	EQU 11               ; Enemy 3 (FAST) starting y-position.
 BOMB_TIMEOUT    EQU 10               ; After many refreshes the bomb should detonate.
 BLAST_X_RADIUS  EQU 4                ; Horizontal blast radius.
 BLAST_Y_RADIUS  EQU 2                ; Vertical blast radius.
+BLINK_REFRESHES EQU 6				 ; Number of refreshes RGB LED should blink for after detonation.
 	
 num_bricks      DCD 0x0000000A		 ; Number of bricks to start game with.
 BRICK_INCREMENT EQU 3				 ; Number of bricks to add after each level.
 	
 time_left DCD 120					 ; Time left in the game.
 	
+
 bomb_placed		DCD 0x00000000       ; Has a bomb been placed?
 bomb_detonated	DCD 0x00000000       ; Has the placed bomb been detonated?
+blink_timer		DCD 0x00000000		 ; Counter for blinking LED.
 bomb_timer		DCD 0x00000000       ; Bomb detonation timer.
 bomb_radius		DCD 0x00000001       ; Bomb blast radius.
 bomb_x_pos		DCD 0x00000000       ; Placed bomb x-position.
@@ -103,7 +112,9 @@ level			DCD 0x00000001		 ; Current level. Initialized to 1.
 score			DCD 0x00000000		 ; Current score.
 
 game_over		DCD 0x00000000		 ; Is the game over?
-
+	
+game_active		DCD 0x00000000		 ; Is the game not paused and currently being played?
+	
 keystroke		DCD 0x00000000		 ; Player's keystroke.
 
 board_clean = "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZZZZZZZZZZZZZZZZZZZZZZZZZ",0
@@ -111,6 +122,7 @@ board 		= "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z
 prev_board 	= "ZZZZZZZZZZZZZZZZZZZZZZZZZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZ Z Z Z Z Z Z Z Z Z Z Z ZZ                       ZZZZZZZZZZZZZZZZZZZZZZZZZZ",0
 
 	ALIGN
+
 
 ;-------------------------------------------------------;
 ; @NAME                                                 ;
@@ -146,6 +158,28 @@ reset_game
 	
 ;-------------------------------------------------------;
 ; @NAME                                                 ;
+; calculate_bonus                                       ;
+;                                                       ;
+; @DESCRIPTION                                          ;
+; Calculate bonus points to be awarded after game ends. ;
+;-------------------------------------------------------;
+calculate_bonus
+	STMFD sp!, {lr}
+	
+	LDR a1, =score					; If the game is over, award a 25 bonus for each life remaining.
+	LDR a2, =num_lives				; Note that if the number of lives left is zero, this does nothing.
+	LDR a2, [a2]						; a2 = num_lives
+	MOV a3, #LIFE_REMAINING_BONUS		; a3 = life_remaining_bonus
+	MUL a4, a2, a3					; a4 = num_lives * life_remaining_bonus
+	LDR a3, [a1]						; a3 = score
+	ADD a3, a3, a4					; score = score + a4
+	STR a3, [a1]						; Update the score in memory after awarding the life remaining bonus.
+	
+	LDMFD sp!, {lr}
+	BX lr
+	
+;-------------------------------------------------------;
+; @NAME                                                 ;
 ; initialize_game                                       ;
 ;                                                       ;
 ; @DESCRIPTION                                          ;
@@ -158,6 +192,10 @@ initialize_game
 	BL clear_bomb_detonation		; Clear the bomb blast if it exists
 
 	BL clear_board					; Clear the board of extra characters
+	
+	LDR a1, =game_active			; Assert game_active flag.
+	MOV a2, #1
+	STR a2, [a1]
 	
 	MOV a1, #0						; Reset bomb placement (Let you place a bomb right away)
 	LDR v1, =bomb_placed
@@ -258,6 +296,11 @@ clear_board_exit
 update_game
     STMFD sp!, {lr}
 	
+	LDR a1, =blink_timer
+	LDR a2, [a1]
+	SUB a2, a2, #1
+	STR a2, [a1]				 ; Decrement blink timer.
+	
 	LDR a1, =bomb_detonated
 	LDR a3, [a1]
 	CMP a3, #1
@@ -315,6 +358,10 @@ update_game_exit
 ;-------------------------------------------------------;
 detonate_bomb
 	STMFD sp!, {lr, v1-v8}
+	
+	LDR a1, =blink_timer
+	MOV a2, #BLINK_REFRESHES	 ; Number of refreshes RGB LED indicating an explosion should blink for.
+	STR a2, [a1]
 	
 	LDR a1, =bomb_placed
 	LDR a1, [a1]

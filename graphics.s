@@ -8,11 +8,14 @@
 	EXTERN print_integer
 	EXTERN output_string
 	EXTERN time_left
+	EXTERN is_paused
+		
 	EXPORT draw
 	EXPORT draw_changes
 	EXPORT BOARD_WIDTH
 	EXPORT BOARD_HEIGHT
 	EXPORT draw_game_over
+	EXPORT draw_paused
 		
 BOARD_WIDTH    EQU 25
 BOARD_HEIGHT   EQU 13
@@ -70,7 +73,16 @@ draw_game_over
 	
 	LDMFD sp!, {lr, v1}
 	BX lr
+
+draw_paused
+	STMFD sp!, {lr, v1}
 	
+	; If is_paused == 1, draw 'PAUSED'
+	; Else if is_paused == 0, undraw 'PAUSED'
+	
+	LDMFD sp!, {lr, v1}
+	BX lr
+
 draw_score
 	STMFD sp!, {lr, v1}
 	
