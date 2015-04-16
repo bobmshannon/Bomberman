@@ -245,6 +245,12 @@ sync_hardware
 	CMP a1, #0
 	MOVEQ a1, #2
 	BLEQ rgb_led
+
+	LDR a1, =game_over
+	LDR a1, [a1]
+	CMP a1, #1
+	MOVEQ a1, #3
+	BLEQ rgb_led
 	
 	;**********************************************************************************************************;
 	; Insert code which updates RGB LED according to current game status here.
