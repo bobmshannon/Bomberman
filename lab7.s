@@ -271,10 +271,17 @@ exit
 interrupt_init       
 	STMFD SP!, {r0-r2, lr}   			; Save registers 
 
+	; Push button setup		 
+	LDR r0, =0xE002C000
+	LDR r1, [r0]
+	ORR r1, r1, #0x20000000
+	BIC r1, r1, #0x10000000
+	STR r1, [r0]  ; PINSEL0 bits 29:28 = 10
+
 	; Classify sources as IRQ or FIQ
 	LDR r0, =0xFFFFF000
 	LDR r1, [r0, #0xC]
-	LDR r2, =0x0070
+	LDR r2, =0x8070
 	ORR r1, r1, r2 						; UART0 FIQ, Timer0 FIQ, Timer1 FIQ
 	STR r1, [r0, #0xC]
 
@@ -418,10 +425,10 @@ EINT1
 		LDR a1, =is_paused
 		LDR a2, [a1]
 		CMP a2, #1
-		MOVEQ a2, #0
+		MOVEQ a3, #0
 		CMP a2, #0
-		MOVEQ a2, #1
-		STR a2, [a1]
+		MOVEQ a3, #1
+		STR a3, [a1]
 		
 		LDR a1, =0xE01FC140				; Reset EINT1 interrupt flag
 		MOV a2, #2
