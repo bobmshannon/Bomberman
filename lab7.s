@@ -233,6 +233,11 @@ sync_hardware
 	MOVEQ a1, #0x1		; 1 lives = 1 lights
 
 	BL leds
+	LDR a1, =game_active
+	LDR a1, [a1]
+	CMP a1, #1
+	MOVEQ a1, #1
+	BLEQ rgb_led
 	;**********************************************************************************************************;
 	; Insert code which updates RGB LED according to current game status here.
 	; If game_active == 1 then RGB = GREEN
