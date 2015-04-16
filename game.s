@@ -383,6 +383,24 @@ detonate_bomb
 	LDR a2, [a2]
 	MOV v2, a2
 	
+	MOV v3, #-1					; Check if bomberman is in same position as the bomb that is detonating.
+	MOV v4, #-2					; If so, kill bomberman.
+	LDR a1, =bomberman_x_pos	
+	LDR a1, [a1]
+	LDR a2, =bomberman_y_pos
+	LDR a2, [a2]
+	LDR a3, =bomb_x_pos
+	LDR a3, [a3]
+	LDR a4, =bomb_y_pos
+	LDR a4, [a4]
+	CMP a1, a3					 ; Do X-positions match?
+	MOVEQ v3, #1
+	CMP a2, a4					 ; Do Y-positions match?
+	MOVEQ v4, #1
+	CMP v3, v4
+	BLEQ kill_bomberman			; Do both X-positions AND Y-positions match? If so, kill bomberman.
+	
+	
 	SUB v3, v1, #BLAST_X_RADIUS  ; Lower bound x-position for blast.
 	ADD v4, v1, #BLAST_X_RADIUS  ; Upper bound x-position for blast.
 	
