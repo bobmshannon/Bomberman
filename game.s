@@ -49,9 +49,9 @@ MOVE_LEFT 		 EQU 4
 	
 ENEMY_MULTIPLIER     EQU 10			 ; Score multiplier when enemy is killed (score += level * multiplier)
 LEVEL_CLEARED_BONUS  EQU 100		 ; Score bonus when level is completed (score += 100)
-LIFE_REMAINING_BONUS EQU 25		 ; Score bonus awarded for each life remaining when game is over (score += num_lives * life_remaining_bonus)
+LIFE_REMAINING_BONUS EQU 25		 	 ; Score bonus awarded for each life remaining when game is over (score += num_lives * life_remaining_bonus)
 	
-MAX_LEVEL        EQU 5               ; Maximum level user can reach. After the player passes this level,
+MAX_LEVEL        EQU 4               ; Maximum level user can reach. After the player passes this level,
 								     ; the game no longer increases in speed.
 BOMBERMAN_X_START EQU 1              ; Bomberman starting x-position.
 BOMBERMAN_Y_START EQU 1              ; Bomberman starting y-position.
@@ -70,7 +70,7 @@ BLAST_X_RADIUS  EQU 4                ; Horizontal blast radius.
 BLAST_Y_RADIUS  EQU 2                ; Vertical blast radius.
 BLINK_REFRESHES EQU 6				 ; Number of refreshes RGB LED should blink for after detonation.
 	
-num_bricks      DCD 0x0000000A		 ; Number of bricks to start game with.
+num_bricks      DCD 0x00000014		 ; Number of bricks to start game with.
 BRICK_INCREMENT EQU 3				 ; Number of bricks to add after each level.
 	
 time_left DCD 120					 ; Time left in the game.
@@ -146,8 +146,8 @@ reset_game
 	STR a2, [a1]					; Set game state to active.
 	
 	LDR a1, =num_bricks
-	MOV a2, #10
-	STR a2, [a1]					; Reset initial number of bricks back to 10.
+	MOV a2, #20
+	STR a2, [a1]					; Reset initial number of bricks back to 20.
 
 	LDR a1, =num_lives
 	MOV a2, #4
@@ -337,8 +337,8 @@ update_game
 	LDR a1, =bomb_timer
 	LDR a1, [a1]
 
-	LDR a2, =bomb_placed
-	LDR a2, [a2]
+	LDR a2, =bomb_placed		 ; Is the bomb placed and has it timed out?
+	LDR a2, [a2]				 ; If so, detonate it.
 	CMP a2, #1
 	MOVEQ a2, #BOMB_TIMEOUT
 	CMP a1, a2

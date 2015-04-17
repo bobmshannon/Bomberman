@@ -5,6 +5,7 @@
 	EXPORT game_loop
 	EXPORT T0MR0
 	EXPORT is_paused
+	EXPORT game_title
 
 	EXTERN draw
 	EXTERN draw_changes
@@ -34,6 +35,8 @@
 	EXTERN blink_timer
 	EXTERN rgb_led
 	EXTERN leds
+	EXTERN draw_score
+	EXTERN draw_time
 
 
 U0BASE  EQU 0xE000C000				; UART0 Base Address	
@@ -58,7 +61,7 @@ refresh_timer_fired DCD 0x00000000
 is_paused DCD 0x00000000
 
 hide_cursor = "\x1B[?25l", 0
-game_title = "       Bomberman", 0
+game_title = "       Bomberman          ", 0
 game_over_message = "Game Over!", 0
 paused_message = "PAUSED", 0
 title = "\f\n\r|-----------------------------------------------------------------------------------------------------------------------| \n\r|  __________   ___________  __       __  __________   ___________  ___________  __       __  ___________  __        _  | \n\r| ¦¦¦¦¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦     ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦     ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦      ¦¦¦ | \n\r| ¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦¦¦   ¦¦¦¦¦¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦¯¯¯¯¯¯¯¯¯ ¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦¦¦   ¦¦¦¦¦¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦¦¦     ¦¦¦ | \n\r| ¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦¦¦¦       ¦¦¦¦¦¦          ¦¦¦       ¦¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦¦¦¦       ¦¦¦¦¦¦¦¦¦    ¦¦¦ | \n\r| ¦¦¦_______¦¦¦¦¦¦       ¦¦¦¦¦¦ ¦¦¦¦¦ ¦¦¦¦¦¦_______¦¦¦¦¦¦_________ ¦¦¦_______¦¦¦¦¦¦ ¦¦¦¦¦ ¦¦¦¦¦¦_______¦¦¦¦¦¦ ¦¦¦   ¦¦¦ | \n\r| ¦¦¦¦¦¦¦¦¦¦¦¦ ¦¦¦       ¦¦¦¦¦¦  ¦¦¦  ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦  ¦¦¦  ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦  ¦¦¦  ¦¦¦ | \n\r| ¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦       ¦¦¦¦¦¦   ¯   ¦¦¦¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦¯¯¯¯¯¯¯¯¯ ¦¦¦¯¯¯¯¦¦¦¯¯ ¦¦¦   ¯   ¦¦¦¦¦¦¯¯¯¯¯¯¯¦¦¦¦¦¦   ¦¦¦ ¦¦¦ | \n\r| ¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦          ¦¦¦     ¦¦¦  ¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦    ¦¦¦¦¦¦ | \n\r| ¦¦¦_______¦¦¦¦¦¦_______¦¦¦¦¦¦       ¦¦¦¦¦¦_______¦¦¦¦¦¦_________ ¦¦¦      ¦¦¦ ¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦     ¦¦¦¦¦ | \n\r| ¦¦¦¦¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦       ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦ ¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦       ¦¦¦¦¦¦      ¦¦¦¦ | \n\r|  ¯¯¯¯¯¯¯¯¯¯   ¯¯¯¯¯¯¯¯¯¯¯  ¯         ¯  ¯¯¯¯¯¯¯¯¯¯   ¯¯¯¯¯¯¯¯¯¯¯  ¯         ¯  ¯         ¯  ¯         ¯  ¯        ¯¯  | \n\r|-----------------------------------------------------------------------------------------------------------------------|", 0
@@ -76,7 +79,7 @@ lab7
 	BL interrupt_init
 	BL timer_init
 	
-	 
+start_game
 	LDR v1, =hide_cursor
 	BL output_string
 	
@@ -148,11 +151,20 @@ game_loop
 	LDR a1, =is_paused					
 	LDR a1, [a1]
 	CMP a1, #1							; Is the game paused? If so, go to the pause_game loop.
-	BLEQ draw_paused					; Update game board to indicate game is paused
-	CMP a1, #1
 	BLEQ pause_game						; Go to pause game loop.
 	
 	BL update_game						; Update game simulation
+
+	MOV a1, #16
+	MOV a2, #2
+	BL set_cursor_pos
+	BL draw_score
+
+	MOV a1, #1
+	MOV a1, #2
+	BL set_cursor_pos
+	BL draw_time
+
 	BL draw_changes						; Draw current state of game simulation
 	
 	LDR a1, =life_lost_flag				; Check if we lost a life last refresh
@@ -185,6 +197,8 @@ pause_game
 	LDR a2, [a1]
 	AND a2, a2, #0xFFFFFFFE				; Clear bit #0 and disable the game countdown timer.
 	STR a2, [a1]
+
+	BL draw_paused
 	
 pause_loop
 	LDR a1, =is_paused
@@ -196,6 +210,8 @@ resume_game
 	LDR a1, =game_active
 	MOV a2, #1
 	STR a2, [a1]						; Assert game_active flag.
+
+	BL draw_paused
 	
 	LDR a1, =T1TCR
 	LDR a2, [a1]
@@ -213,8 +229,13 @@ end_screen_loop
 	ADD a1, a1, #1
 	LDR a3, [a2]						; Check for a keypress (Enter key)
 	CMP a3, #'\r'
-	BNE info_loop
+	BEQ end_screen_loop_exit
+;	BNE info_loop
+	CMP a3, #0x1B
+	BEQ terminate
+	B end_screen_loop
 	
+end_screen_loop_exit
 	LDR a2, =seed
 	STR a1, [a2]						; Save the seeded value (Comment this out to have constant seed)
 	
@@ -224,6 +245,7 @@ end_screen_loop
 	BL reset_game						; Reset the game parameters.
 	BL initialize_game
 
+	BL draw								; Draw initial game board.
 	B game_loop
 	
 sync_hardware
@@ -301,6 +323,10 @@ sync_hardware_exit
 	LDMFD sp!, {lr}
 	BX lr
 	
+terminate
+	MOV a1, #'\f'
+	BL output_character	
+
 exit
 	LDMFD sp!, {lr, r0-r4}
 	BX lr
