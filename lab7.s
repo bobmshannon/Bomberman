@@ -130,7 +130,7 @@ info_loop
 	BL draw								; Draw initial game board.
 	
 game_loop	
-	LDR a1, =refresh_timer_fired		; Reset the refresh timer flag
+	LDR a1, =refresh_timer_fired			; Reset the refresh timer flag
 	MOV a2, #0
 	STR a2, [a1]
 	
@@ -143,7 +143,7 @@ game_loop
 	BLEQ calculate_bonus				; Calculate bonus points to award to player if game is over.
 	
 	CMP v1, #1
-	BLEQ draw_game_over					; Draw the game over screen.
+	BLEQ draw_game_over				; Draw the game over screen.
 	
 	CMP v1, #1 
 	BEQ end_screen						; Jump to the ending screen loop (which will prompt the user if he or she wants to play again.)
@@ -151,7 +151,7 @@ game_loop
 	LDR a1, =is_paused					
 	LDR a1, [a1]
 	CMP a1, #1							; Is the game paused? If so, go to the pause_game loop.
-	BLEQ pause_game						; Go to pause game loop.
+	BLEQ pause_game					; Go to pause game loop.
 	
 	BL update_game						; Update game simulation
 
@@ -170,7 +170,7 @@ game_loop
 	LDR a1, =life_lost_flag				; Check if we lost a life last refresh
 	LDR a1, [a1]
 	CMP a1, #1
-	BLEQ initialize_game				; If we did, reset the game state
+	BLEQ initialize_game					; If we did, reset the game state
 	
 wait
 	LDR a1, =refresh_timer_fired
@@ -182,7 +182,7 @@ wait
 	MOV a2, #0
 	BL set_cursor_pos
 	LDR v1, =game_title
-	BL output_string					; Re-draw game title.
+	BL output_string						; Re-draw game title.
 	
 	B game_loop
 	
@@ -195,7 +195,7 @@ pause_game
 	
 	LDR a1, =T1TCR
 	LDR a2, [a1]
-	AND a2, a2, #0xFFFFFFFE				; Clear bit #0 and disable the game countdown timer.
+	AND a2, a2, #0xFFFFFFFE			; Clear bit #0 and disable the game countdown timer.
 	STR a2, [a1]
 
 	BL draw_paused
@@ -253,16 +253,12 @@ sync_hardware
 	
 	LDR a1, =level
 	LDR a1, [a1]
-	BL display_digit					; Update 7 segment display to illuminate current level number. 
+	BL display_digit						; Update 7 segment display to illuminate current level number. 
 										; The case where the 7 segment should illuminate '0' is handled
 										; before the game loop is first entered.
-	
-	;**********************************************************************************************************;
-	; Insert code which update's LED's according to number of lives left here. Can simply do a switch statement
-	; and hard code each possible scenario in -- there are only 4 of them, i.e. num_lives = {0, 1, 2, 3}.
-	;**********************************************************************************************************;
+
 	LDR a2, =num_lives
-	LDR a2, [a2]		;Load the number of lives left
+	LDR a2, [a2]			; Load the number of lives left
 
 	CMP a2, #4
 	MOVEQ a1, #0xF		; 4 lives = 4 lights
@@ -307,18 +303,6 @@ sync_hardware
 	MOVEQ a1, #6
 	BLEQ rgb_led
 	
-	;**********************************************************************************************************;
-	; Insert code which updates RGB LED according to current game status here.
-	; If game_active == 1 then RGB = GREEN
-	; If game_active == 0 then RGB == WHITE
-	; If is_paused == 1 then RGB == BLUE
-	; If blink_timer % 2 == 0 && blink_timer >= 0 then RGB == RED
-	; If blink_timer % 2 != 0 && blink_timer >= 0 then RGB == OFF
-	;
-	; NOTE: the order of the above IF statements DO matter! (for example: when game_active == 0 && is_paused == 1
-	; the LED should be BLUE.)
-	; The case where the LED should be WHITE is handled before the game loop is first entered.
-	;**********************************************************************************************************;
 sync_hardware_exit	
 	LDMFD sp!, {lr}
 	BX lr
@@ -342,7 +326,7 @@ interrupt_init
 	LDR r1, [r0]
 	ORR r1, r1, #0x20000000
 	BIC r1, r1, #0x10000000
-	STR r1, [r0]  ; PINSEL0 bits 29:28 = 10
+	STR r1, [r0]  						; PINSEL0 bits 29:28 = 10
 
 	; Classify sources as IRQ or FIQ
 	LDR r0, =0xFFFFF000
@@ -350,11 +334,6 @@ interrupt_init
 	LDR r2, =0x8070
 	ORR r1, r1, r2 						; UART0 FIQ, Timer0 FIQ, Timer1 FIQ
 	STR r1, [r0, #0xC]
-
-	;***********************************************;
-	; Insert code which initializes the push button
-	; interrupt here (or above on line 248).
-	;***********************************************;
 
 	; External Interrupt 1 setup for edge sensitive
 	LDR r0, =0xE01FC148
@@ -393,8 +372,8 @@ timer_init
 	
 	LDR r0, =T0MR0
 	LDR r1, =0x46514E					; Set MR0 to .25 second intervals
-	;LDR r1, =0x1C2000      		    ; Set MR0 to 0.1 second intervals
-	;LDR r1, =0x1194538					; Set MR0 to 1s intervals
+	;LDR r1, =0x1C2000      		; Set MR0 to 0.1 second intervals
+	;LDR r1, =0x1194538				; Set MR0 to 1s intervals
 	STR r1, [r0]
 
 	LDR r0, =T1MCR						; Init Match register 0
@@ -402,8 +381,8 @@ timer_init
 	STR r1, [r0]
 
 	LDR r0, =T1MR0
-	;LDR r1, =0x46514E					; Set MR0 to .25 second intervals
-	;LDR r1, =0x1C2000      		    ; Set MR0 to 0.1 second intervals
+	;LDR r1, =0x46514E				; Set MR0 to .25 second intervals
+	;LDR r1, =0x1C2000      		; Set MR0 to 0.1 second intervals
 	LDR r1, =0x1194538					; Set MR0 to 1s intervals
 	STR r1, [r0]
 	
@@ -416,9 +395,9 @@ timer_init
 FIQ_Handler
 		STMFD SP!, {r0-r12, lr}   		; Save registers 
 
-		LDR r0, =0xE000C008				; Check if FIQ is caused by UART0
+		LDR r0, =0xE000C008			; Check if FIQ is caused by UART0
 		LDR r0, [r0]
-		AND r0, #0x0000000F				; Isolate bits 1-3
+		AND r0, #0x0000000F			; Isolate bits 1-3
 		CMP r0, #4
 		BEQ UART0INT
 
@@ -428,7 +407,7 @@ FIQ_Handler
 		CMP r0, #1
 		BEQ TIMER1INT
 		
-		LDR r0, =0xE01FC140				; Check External Interrupt Flag Register for Push Button Input
+		LDR r0, =0xE01FC140			; Check External Interrupt Flag Register for Push Button Input
 		LDR r0, [r0]
 		AND r0, #0x00000002
 		CMP r0, #2
@@ -459,7 +438,7 @@ TIMER1INT
 		LDR a1, =game_over
 		CMP a2, #0						; Did we run out of time?
 		MOVEQ a2, #1
-		STREQ a2, [a1]					; Set game_over
+		STREQ a2, [a1]				; Set game_over
 		
 		LDR a1, =T1IR					; Reset Match Register 0 interrupt flag
 	    MOV a2, #1	

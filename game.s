@@ -52,7 +52,7 @@ LEVEL_CLEARED_BONUS  EQU 100		 ; Score bonus when level is completed (score += 1
 LIFE_REMAINING_BONUS EQU 25		 	 ; Score bonus awarded for each life remaining when game is over (score += num_lives * life_remaining_bonus)
 	
 MAX_LEVEL        EQU 4               ; Maximum level user can reach. After the player passes this level,
-								     ; the game no longer increases in speed.
+										; the game no longer increases in speed.
 BOMBERMAN_X_START EQU 1              ; Bomberman starting x-position.
 BOMBERMAN_Y_START EQU 1              ; Bomberman starting y-position.
 	
